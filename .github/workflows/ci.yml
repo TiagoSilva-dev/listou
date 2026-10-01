@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: listou
+          POSTGRES_PASSWORD: listou
+          POSTGRES_DB: listou_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U listou" --health-interval 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://listou:listou@localhost:5432/listou_test?sslmode=disable
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: apps/api/go.mod
+          cache-dependency-path: apps/api/go.sum
+      - run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+      - run: go vet ./...
+      - name: Migrations up/down/up
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+        run: go run ./cmd/migrate up && go run ./cmd/migrate reset && go run ./cmd/migrate up
+      - run: go test -race ./...
+      - run: CGO_ENABLED=0 go build ./...
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm -r lint
+      - run: pnpm -r typecheck
+      - run: pnpm -r test
+      - run: pnpm --filter @listou/web build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f infra/docker/api.Dockerfile .
+      - run: docker build -f infra/docker/web.Dockerfile .

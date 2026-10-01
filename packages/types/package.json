@@ -1,0 +1,22 @@
+{
+  "name": "@listou/types",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@listou/config": "workspace:*",
+    "typescript": "5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

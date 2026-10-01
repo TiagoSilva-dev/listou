@@ -1,0 +1,141 @@
+/*
+ * Listou design tokens. Every color, radius, shadow, type size and motion
+ * curve used by components comes from here — never hard-code values in
+ * components. Tailwind v4 turns each --token into a utility
+ * (bg-canvas, text-ink-muted, rounded-card, shadow-soft, ease-out-soft...).
+ */
+@theme {
+  /* Color — warm ivory canvas, plum ink, lavender primary, blush accent */
+  --color-canvas: #fbf8f5;
+  --color-canvas-deep: #f5efe9;
+  --color-surface: #ffffff;
+  --color-ink: #241c2c;
+  --color-ink-soft: #4a4152;
+  --color-ink-muted: #7a7182;
+  --color-line: #ece5ea;
+  --color-line-strong: #ddd3dc;
+
+  --color-primary: #6b4fa0;
+  --color-primary-hover: #5a4189;
+  --color-primary-soft: #f2edf9;
+  --color-primary-ink: #ffffff;
+
+  --color-blush: #e8947a;
+  --color-blush-soft: #fcefe9;
+  --color-sage: #6f9a82;
+  --color-sage-soft: #ebf3ee;
+  --color-sun: #e6b45c;
+  --color-sun-soft: #fbf3e2;
+
+  --color-success: #2f8a66;
+  --color-success-soft: #e5f3ec;
+  --color-warning: #b07320;
+  --color-warning-soft: #fbf1e1;
+  --color-danger: #c0453c;
+  --color-danger-soft: #fbeae8;
+
+  /* Merchant badges (neutral-tinted, never the merchants' brand marks) */
+  --color-merchant-amazon: #232f3e;
+  --color-merchant-mercadolivre: #2d3277;
+  --color-merchant-shopee: #d1462f;
+
+  /* Typography */
+  --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-display-sm: 2rem;
+  --text-display-sm--line-height: 1.1;
+  --text-display: 2.75rem;
+  --text-display--line-height: 1.05;
+  --text-display-lg: 4rem;
+  --text-display-lg--line-height: 1;
+
+  /* Radius */
+  --radius-chip: 0.625rem;
+  --radius-control: 0.875rem;
+  --radius-card: 1.25rem;
+  --radius-sheet: 1.75rem;
+  --radius-hero: 2rem;
+
+  /* Elevation — soft, warm-tinted shadows */
+  --shadow-hairline: 0 0 0 1px rgb(36 28 44 / 0.06);
+  --shadow-soft: 0 1px 2px rgb(36 28 44 / 0.04), 0 4px 16px -4px rgb(36 28 44 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(36 28 44 / 0.04), 0 16px 40px -12px rgb(36 28 44 / 0.18);
+  --shadow-sheet: 0 -8px 40px -12px rgb(36 28 44 / 0.25);
+  --shadow-focus: 0 0 0 4px rgb(107 79 160 / 0.18);
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 450ms;
+
+  --animate-fade-up: fade-up var(--duration-slow) var(--ease-out-soft) both;
+  --animate-fade-in: fade-in var(--duration-base) var(--ease-out-soft) both;
+  --animate-sheet-up: sheet-up var(--duration-slow) var(--ease-out-soft) both;
+  --animate-pop: pop var(--duration-base) var(--ease-spring) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes pop {
+    0% {
+      transform: scale(0.96);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+}
+
+/* Spacing uses Tailwind's 4px scale (--spacing: 0.25rem); layout widths: */
+@theme {
+  --container-page: 72rem;
+  --container-content: 42rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

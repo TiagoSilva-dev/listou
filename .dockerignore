@@ -1,0 +1,7 @@
+**/node_modules
+**/.next
+.git
+apps/api/bin
+playwright-report
+test-results
+.env

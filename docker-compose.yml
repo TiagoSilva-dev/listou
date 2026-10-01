@@ -1,0 +1,44 @@
+# Local development stack. Redis is intentionally absent until a feature needs
+# it (see docs/decisions.md, ADR-0004).
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: listou
+      POSTGRES_PASSWORD: listou
+      POSTGRES_DB: listou
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U listou"]
+      interval: 3s
+      retries: 20
+
+  migrate:
+    build: { context: ., dockerfile: infra/docker/api.Dockerfile }
+    entrypoint: ["/bin/sh", "-c", "/app/migrate up && /app/migrate seed"]
+    environment:
+      DATABASE_URL: postgres://listou:listou@postgres:5432/listou?sslmode=disable
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: ., dockerfile: infra/docker/api.Dockerfile }
+    environment:
+      APP_ENV: development
+      DATABASE_URL: postgres://listou:listou@postgres:5432/listou?sslmode=disable
+      PUBLIC_WEB_URL: http://localhost:3000
+    ports: ["8080:8080"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  web:
+    build: { context: ., dockerfile: infra/docker/web.Dockerfile }
+    environment:
+      API_URL: http://api:8080
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    ports: ["3000:3000"]
+    depends_on: [api]
+
+volumes:
+  pgdata:
