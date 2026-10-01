@@ -155,6 +155,44 @@ func NewHandler(svc *Service, optional func(*http.Request) *auth.User) *Handler 
 
 func (h *Handler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v1/public/lists/{slug}", h.get)
+	mux.HandleFunc("GET /api/v1/public/sitemap", h.sitemap)
+}
+
+// SitemapEntry is a public, indexable list for the web sitemap.
+type SitemapEntry struct {
+	Slug      string    `json:"slug"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+// Sitemap lists only published PUBLIC events; UNLISTED and PRIVATE are never exposed.
+func (s *Service) Sitemap(ctx context.Context) ([]SitemapEntry, error) {
+	rows, err := s.db.Query(ctx, `
+		SELECT slug, updated_at FROM events
+		WHERE status = 'PUBLISHED' AND visibility = 'PUBLIC' AND deleted_at IS NULL
+		ORDER BY updated_at DESC LIMIT 5000`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []SitemapEntry{}
+	for rows.Next() {
+		var e SitemapEntry
+		if err := rows.Scan(&e.Slug, &e.UpdatedAt); err != nil {
+			return nil, err
+		}
+		out = append(out, e)
+	}
+	return out, rows.Err()
+}
+
+func (h *Handler) sitemap(w http.ResponseWriter, r *http.Request) {
+	entries, err := h.svc.Sitemap(r.Context())
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "public, max-age=300")
+	httpx.JSON(w, http.StatusOK, map[string]any{"lists": entries})
 }
 
 func (h *Handler) get(w http.ResponseWriter, r *http.Request) {

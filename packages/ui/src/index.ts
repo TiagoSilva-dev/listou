@@ -1,6 +1,7 @@
 export { cn } from "./cn";
 export { Button, buttonVariants, type ButtonProps } from "./components/button";
-export { Input, Textarea, Field } from "./components/field";
+export { Input, Textarea, Select, Field } from "./components/field";
+export { Switch } from "./components/switch";
 export { Card } from "./components/card";
 export { Price } from "./components/price";
 export { Badge, MarketplaceBadge, badgeVariants } from "./components/badges";

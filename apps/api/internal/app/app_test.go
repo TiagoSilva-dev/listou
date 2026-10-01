@@ -341,6 +341,16 @@ func TestSurpriseModeHidesWhoBoughtWhat(t *testing.T) {
 	if d.path("stats", "purchasedUnits").(float64) != 1 || strings.Contains(raw, "Carla") || strings.Contains(raw, "Relógio") {
 		t.Fatalf("surprise mode leaked: %s", raw)
 	}
+	// Per-item state is hidden from the owner too, but guests still see availability.
+	ownerList := owner.do("GET", "/api/v1/events/"+eventID+"/list", nil)
+	items := ownerList.path("items").([]any)
+	if it := items[0].(map[string]any); it["purchasedQuantity"].(float64) != 0 || it["status"] != "AVAILABLE" {
+		t.Fatalf("owner list leaked per-item state: %v", it)
+	}
+	pub := (&client{t: t, h: h}).do("GET", "/api/v1/public/lists/"+slug, nil)
+	if it := pub.path("items").([]any)[0].(map[string]any); it["status"] != "PURCHASED" {
+		t.Fatalf("guests must still see availability: %v", it)
+	}
 }
 
 func mustJSON(v any) []byte { b, _ := json.Marshal(v); return b }

@@ -83,7 +83,32 @@ func (s *Service) ForEvent(ctx context.Context, userID, eventID uuid.UUID) (List
 	if err != nil {
 		return ListView{}, fmt.Errorf("primary list: %w", err)
 	}
-	return s.View(ctx, s.pool, l)
+	v, err := s.View(ctx, s.pool, l)
+	if err != nil {
+		return ListView{}, err
+	}
+	if err := s.redactIfSurprise(ctx, eventID, v.Items); err != nil {
+		return ListView{}, err
+	}
+	return v, nil
+}
+
+// redactIfSurprise hides per-item reserved/purchased state from the owner when
+// the event is in surprise mode ("I don't want to know who bought what").
+// Aggregate totals remain available on the dashboard.
+func (s *Service) redactIfSurprise(ctx context.Context, eventID uuid.UUID, items []Item) error {
+	var surprise bool
+	if err := s.pool.QueryRow(ctx, `SELECT surprise_mode FROM events WHERE id = $1`, eventID).Scan(&surprise); err != nil {
+		return fmt.Errorf("surprise flag: %w", err)
+	}
+	if !surprise {
+		return nil
+	}
+	for i := range items {
+		items[i].PurchasedQuantity, items[i].ReservedQuantity = 0, 0
+		items[i].AvailableQuantity, items[i].Status = items[i].DesiredQuantity, Available
+	}
+	return nil
 }
 
 // View loads categories and hydrated items for a list (also used by the public page).
@@ -208,14 +233,18 @@ func (s *Service) DeleteCategory(ctx context.Context, userID, categoryID uuid.UU
 }
 
 func (s *Service) Items(ctx context.Context, userID, listID uuid.UUID) ([]Item, error) {
-	if _, err := access.List(ctx, s.pool, listID, userID); err != nil {
+	eventID, err := access.List(ctx, s.pool, listID, userID)
+	if err != nil {
 		return nil, err
 	}
 	items, err := s.repo.Items(ctx, s.pool, listID)
 	if err != nil {
 		return nil, err
 	}
-	return items, s.hydrate(ctx, s.pool, items)
+	if err := s.hydrate(ctx, s.pool, items); err != nil {
+		return nil, err
+	}
+	return items, s.redactIfSurprise(ctx, eventID, items)
 }
 
 func (s *Service) CreateItem(ctx context.Context, userID, listID uuid.UUID, in ItemInput) (Item, error) {
@@ -360,7 +389,11 @@ func (s *Service) loadItem(ctx context.Context, id uuid.UUID) (Item, error) {
 	if err := s.hydrate(ctx, s.pool, items); err != nil {
 		return Item{}, err
 	}
-	return items[0], nil
+	var eventID uuid.UUID
+	if err := s.pool.QueryRow(ctx, `SELECT event_id FROM gift_lists WHERE id = $1`, it.ListID).Scan(&eventID); err != nil {
+		return Item{}, err
+	}
+	return items[0], s.redactIfSurprise(ctx, eventID, items)
 }
 
 func (s *Service) UpdateItem(ctx context.Context, userID, itemID uuid.UUID, in ItemInput) (Item, error) {

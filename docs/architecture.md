@@ -36,6 +36,8 @@ Browser ──► Next.js (apps/web, Vercel)
 | `dashboard`       | métricas agregadas do criador (respeita presente surpresa)                                                                             |
 | `recommendations` | `RecommendationProvider` (regras hoje; LLM/Jev depois)                                                                                 |
 | `decision`        | `DecisionEngine` (Rule/Mock hoje; Jev opcional depois)                                                                                 |
+| `access`          | resolução de papéis (evento/lista/item/categoria); recurso alheio responde 404                                                         |
+| `platform/audit`  | trilha de auditoria (ex.: exclusão de evento)                                                                                          |
 
 Camadas por módulo: `model` (regras puras, testáveis) → `repository` (SQL) → `service`
 (casos de uso + transações) → `handler` (HTTP fino).
@@ -48,6 +50,16 @@ Camadas por módulo: `model` (regras puras, testáveis) → `repository` (SQL) �
 3. Registra `click_events` (oferta, item, evento, visitor id aleatório first-party, host do
    referrer, UTM, classe de dispositivo) — sem IP, sem fingerprint.
 4. `302` para o marketplace. A URL do marketplace nunca é enviada ao frontend.
+
+## Presente surpresa
+
+Com `surprise_mode` ativo, o dono não recebe estado por item nem nomes de convidados: o dashboard
+agrega apenas totais, e `GET /events/{id}/list` passa por `redactIfSurprise`. Convidados continuam
+vendo disponibilidade na página pública. Há teste de integração cobrindo o vazamento.
+
+## Sitemap público
+
+`GET /api/v1/public/sitemap` lista slugs publicados; o Next gera `sitemap.xml` a partir dele.
 
 ## Concorrência de reservas
 

@@ -121,11 +121,12 @@ func seed(ctx context.Context, url string) error {
 			withProduct = append(withProduct, it)
 		}
 	}
-	if len(withProduct) > 1 {
-		if _, err := resSvc.Create(ctx, slugWedding, withProduct[0].ID, nil, reservations.CreateInput{Kind: "RESERVATION", Quantity: 1, GuestName: "Ana (convidada de demonstração)"}); err != nil {
+	if len(withProduct) > 7 {
+		// Pick items further down so the first screen of the public list looks inviting.
+		if _, err := resSvc.Create(ctx, slugWedding, withProduct[3].ID, nil, reservations.CreateInput{Kind: "RESERVATION", Quantity: 1, GuestName: "Ana (convidada de demonstração)"}); err != nil {
 			return fmt.Errorf("seed reservation: %w", err)
 		}
-		if _, err := resSvc.Create(ctx, slugWedding, withProduct[1].ID, nil, reservations.CreateInput{Kind: "PURCHASE", Quantity: 1, GuestName: "Bruno (convidado de demonstração)"}); err != nil {
+		if _, err := resSvc.Create(ctx, slugWedding, withProduct[6].ID, nil, reservations.CreateInput{Kind: "PURCHASE", Quantity: 1, GuestName: "Bruno (convidado de demonstração)"}); err != nil {
 			return fmt.Errorf("seed purchase: %w", err)
 		}
 	}

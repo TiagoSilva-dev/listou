@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, DM_Sans } from "next/font/google";
 import { ToastProvider } from "@listou/ui";
 import { siteUrl } from "@/lib/env";
 import "./globals.css";
@@ -11,9 +11,9 @@ const fraunces = Fraunces({
   axes: ["SOFT", "opsz"],
 });
 
-const jakarta = Plus_Jakarta_Sans({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-sans-body",
   display: "swap",
 });
 
@@ -36,7 +36,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${fraunces.variable} ${jakarta.variable}`}>
+    <html lang="pt-BR" className={`${fraunces.variable} ${dmSans.variable}`}>
       <body className="min-h-dvh">
         <ToastProvider>{children}</ToastProvider>
       </body>

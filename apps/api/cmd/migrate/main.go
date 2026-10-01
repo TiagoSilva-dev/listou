@@ -49,7 +49,15 @@ func run(args []string) error {
 	case "status":
 		return goose.StatusContext(ctx, db, ".")
 	case "reset":
-		return goose.ResetContext(ctx, db, ".")
+		// Dev helper: down-migrations cannot remove reference rows that data points to,
+		// so wipe the schema and re-apply from scratch. Never allowed in production.
+		if os.Getenv("APP_ENV") == "production" {
+			return fmt.Errorf("reset is disabled when APP_ENV=production")
+		}
+		if _, err := db.ExecContext(ctx, "DROP SCHEMA public CASCADE; CREATE SCHEMA public"); err != nil {
+			return err
+		}
+		return goose.UpContext(ctx, db, ".")
 	case "seed":
 		return seed(ctx, url)
 	default:

@@ -43,6 +43,7 @@ export const Offer = z.object({
   /** Relative outbound URL (/go/{offerId}). Raw merchant URLs are never sent. */
   goUrl: z.string(),
   lastSyncedAt: z.string().nullable(),
+  demo: z.boolean(),
 });
 export type Offer = z.infer<typeof Offer>;
 
@@ -51,6 +52,9 @@ export const ProductSummary = z.object({
   canonicalTitle: z.string(),
   brand: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  emoji: z.string().nullable(),
+  /** True for fictitious mock-provider data, which the UI must label. */
+  demo: z.boolean(),
 });
 export type ProductSummary = z.infer<typeof ProductSummary>;
 
@@ -70,6 +74,7 @@ export const ListItem = z.object({
   description: z.string().nullable(),
   notes: z.string().nullable(),
   imageUrl: z.string().nullable(),
+  emoji: z.string().nullable(),
   externalUrl: z.string().nullable(),
   priceReferenceCents: z.number().int().nullable(),
   currency: z.string(),
@@ -79,6 +84,7 @@ export const ListItem = z.object({
   reservedQuantity: z.number().int(),
   availableQuantity: z.number().int(),
   status: ItemStatus,
+  position: z.number().int(),
   product: ProductSummary.nullable(),
   offers: z.array(Offer),
   createdAt: z.string(),
@@ -131,7 +137,12 @@ export const PublicEvent = Event.pick({
 });
 export type PublicEvent = z.infer<typeof PublicEvent>;
 
-export const PublicItem = ListItem.omit({ notes: true, listId: true, createdAt: true });
+export const PublicItem = ListItem.omit({
+  notes: true,
+  listId: true,
+  createdAt: true,
+  position: true,
+});
 export type PublicItem = z.infer<typeof PublicItem>;
 
 export const PublicList = z.object({
@@ -140,20 +151,29 @@ export const PublicList = z.object({
   categories: z.array(Category),
   items: z.array(PublicItem),
   progress: ListProgress,
+  preview: z.boolean(),
 });
 export type PublicList = z.infer<typeof PublicList>;
 
 export const SearchResult = z.object({
   providerCode: z.string(),
   externalId: z.string(),
-  merchant: Merchant,
   title: z.string(),
   brand: z.string().nullable(),
   imageUrl: z.string().nullable(),
-  priceCents: z.number().int().nullable(),
-  currency: z.string(),
-  availability: Availability,
+  emoji: z.string().nullable(),
+  category: z.string().nullable(),
+  /** Only present when the source's terms allow showing ratings. */
   rating: z.number().nullable(),
+  demo: z.boolean(),
+  offers: z.array(
+    z.object({
+      merchant: Merchant,
+      priceCents: z.number().int().nullable(),
+      availability: Availability,
+    }),
+  ),
+  lowestPriceCents: z.number().int().nullable(),
 });
 export type SearchResult = z.infer<typeof SearchResult>;
 
@@ -164,10 +184,21 @@ export const Reservation = z.object({
   quantity: z.number().int(),
   status: z.enum(["ACTIVE", "CANCELLED", "EXPIRED", "CONFIRMED"]),
   expiresAt: z.string().nullable(),
+  createdAt: z.string(),
   /** Returned once, at creation. Lets the guest cancel without an account. */
   manageToken: z.string().optional(),
 });
 export type Reservation = z.infer<typeof Reservation>;
+
+export const RecommendedCategory = z.object({
+  name: z.string(),
+  emoji: z.string(),
+  reason: z.string(),
+  desires: z
+    .array(z.object({ title: z.string(), emoji: z.string(), quantity: z.number().int() }))
+    .nullable(),
+});
+export type RecommendedCategory = z.infer<typeof RecommendedCategory>;
 
 export const DashboardActivity = z.object({
   kind: z.enum(["RESERVED", "PURCHASED", "CANCELLED", "CLICKED"]),
@@ -192,3 +223,21 @@ export const Dashboard = z.object({
   recentActivity: z.array(DashboardActivity),
 });
 export type Dashboard = z.infer<typeof Dashboard>;
+
+export const GiftListMeta = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  title: z.string(),
+  description: z.string().nullable(),
+  allowReservations: z.boolean(),
+  allowGroupContributions: z.boolean(),
+});
+export type GiftListMeta = z.infer<typeof GiftListMeta>;
+
+/** Owner view of a list (GET /events/{id}/list). */
+export const OwnerList = z.object({
+  list: GiftListMeta,
+  categories: z.array(Category),
+  items: z.array(ListItem),
+});
+export type OwnerList = z.infer<typeof OwnerList>;

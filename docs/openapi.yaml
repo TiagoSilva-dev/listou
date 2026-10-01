@@ -1,0 +1,478 @@
+openapi: 3.0.3
+info:
+  title: Listou API
+  version: 0.1.0
+  description: >
+    REST API do Listou. Autenticação por cookie de sessão `listou_session` (HttpOnly).
+    Todos os erros seguem o envelope `{ "error": { "code", "message", "requestId", "fields?" } }`.
+servers:
+  - url: http://localhost:8080
+paths:
+  /health: { get: { summary: Liveness, tags: [ops], responses: { "200": { description: ok } } } }
+  /ready:
+    {
+      get:
+        {
+          summary: Readiness (checa banco),
+          tags: [ops],
+          responses: { "200": { description: ready }, "503": { description: indisponível } },
+        },
+    }
+  /api/v1/flags:
+    {
+      get:
+        { summary: Feature flags ativas, tags: [ops], responses: { "200": { description: ok } } },
+    }
+
+  /api/v1/auth/register:
+    post:
+      summary: Cria conta e inicia sessão
+      tags: [auth]
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: "#/components/schemas/Register" } } },
+        }
+      responses:
+        "201":
+          {
+            description: Conta criada (Set-Cookie listou_session),
+            content:
+              { application/json: { schema: { $ref: "#/components/schemas/UserEnvelope" } } },
+          }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+        "429": { $ref: "#/components/responses/Error" }
+  /api/v1/auth/login:
+    post:
+      summary: Login com e-mail e senha
+      tags: [auth]
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: "#/components/schemas/Login" } } },
+        }
+      responses:
+        "200":
+          {
+            description: ok,
+            content:
+              { application/json: { schema: { $ref: "#/components/schemas/UserEnvelope" } } },
+          }
+        "401": { $ref: "#/components/responses/Error" }
+  /api/v1/auth/logout:
+    { post: { summary: Revoga a sessão, tags: [auth], responses: { "204": { description: ok } } } }
+  /api/v1/me:
+    {
+      get:
+        {
+          summary: Usuário atual,
+          tags: [auth],
+          security: [{ session: [] }],
+          responses:
+            {
+              "200":
+                {
+                  description: ok,
+                  content:
+                    { application/json: { schema: { $ref: "#/components/schemas/UserEnvelope" } } },
+                },
+              "401": { $ref: "#/components/responses/Error" },
+            },
+        },
+    }
+
+  /api/v1/events:
+    get:
+      {
+        summary: Eventos que o usuário gerencia,
+        tags: [events],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok } },
+      }
+    post:
+      summary: Cria evento + lista principal (opcionalmente com sugestões)
+      tags: [events]
+      security: [{ session: [] }]
+      requestBody:
+        {
+          required: true,
+          content: { application/json: { schema: { $ref: "#/components/schemas/CreateEvent" } } },
+        }
+      responses:
+        {
+          "201": { description: criado },
+          "409": { description: SLUG_TAKEN },
+          "422": { $ref: "#/components/responses/Error" },
+        }
+  /api/v1/events/{id}:
+    parameters: [{ $ref: "#/components/parameters/id" }]
+    get:
+      {
+        summary: Detalhe do evento,
+        tags: [events],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok }, "404": { $ref: "#/components/responses/Error" } },
+      }
+    patch:
+      {
+        summary: Atualiza evento (inclui publicar,
+        visibilidade,
+        modo surpresa),
+        tags: [events],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok }, "404": { $ref: "#/components/responses/Error" } },
+      }
+    delete:
+      {
+        summary: Exclui (soft delete; só o dono),
+        tags: [events],
+        security: [{ session: [] }],
+        responses: { "204": { description: ok }, "403": { $ref: "#/components/responses/Error" } },
+      }
+  /api/v1/events/{id}/list:
+    {
+      get:
+        {
+          summary: Lista principal com categorias e itens (visão do dono),
+          tags: [lists],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/events/{id}/dashboard:
+    {
+      get:
+        {
+          summary: Métricas do criador (respeita presente surpresa),
+          tags: [dashboard],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/slugs/{slug}:
+    {
+      get:
+        {
+          summary: Disponibilidade de endereço,
+          tags: [events],
+          parameters: [{ name: slug, in: path, required: true, schema: { type: string } }],
+          security: [{ session: [] }],
+          responses: { "200": { description: "{ available }" } },
+        },
+    }
+
+  /api/v1/lists/{id}:
+    {
+      patch:
+        {
+          summary: Atualiza lista,
+          tags: [lists],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/lists/{id}/items:
+    parameters: [{ $ref: "#/components/parameters/id" }]
+    get:
+      {
+        summary: Itens da lista,
+        tags: [items],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok } },
+      }
+    post:
+      {
+        summary: Cria item (manual ou com productId),
+        tags: [items],
+        security: [{ session: [] }],
+        responses:
+          { "201": { description: criado }, "422": { $ref: "#/components/responses/Error" } },
+      }
+  /api/v1/lists/{id}/categories:
+    {
+      post:
+        {
+          summary: Cria categoria,
+          tags: [lists],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "201": { description: criado } },
+        },
+    }
+  /api/v1/categories/{id}:
+    parameters: [{ $ref: "#/components/parameters/id" }]
+    patch:
+      {
+        summary: Edita categoria,
+        tags: [lists],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok } },
+      }
+    delete:
+      {
+        summary: Remove categoria,
+        tags: [lists],
+        security: [{ session: [] }],
+        responses: { "204": { description: ok } },
+      }
+  /api/v1/items/{id}:
+    parameters: [{ $ref: "#/components/parameters/id" }]
+    patch:
+      {
+        summary: Edita item,
+        tags: [items],
+        security: [{ session: [] }],
+        responses: { "200": { description: ok }, "409": { description: ITEM_QUANTITY_CONFLICT } },
+      }
+    delete:
+      {
+        summary: Remove (arquiva se houver reservas),
+        tags: [items],
+        security: [{ session: [] }],
+        responses: { "204": { description: ok } },
+      }
+
+  /api/v1/products/search:
+    get:
+      summary: Busca unificada nos providers habilitados
+      tags: [catalog]
+      security: [{ session: [] }]
+      parameters:
+        - {
+            name: q,
+            in: query,
+            required: true,
+            schema: { type: string, minLength: 2, maxLength: 100 },
+          }
+        - {
+            name: sort,
+            in: query,
+            schema: { type: string, enum: [relevance, price_asc, price_desc] },
+          }
+        - { name: limit, in: query, schema: { type: integer, maximum: 40 } }
+      responses: { "200": { description: ok } }
+  /api/v1/products/import:
+    {
+      post:
+        {
+          summary: Persiste produto + ofertas de um provider,
+          tags: [catalog],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/products/{id}:
+    {
+      get:
+        {
+          summary: Produto e ofertas,
+          tags: [catalog],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/products/{id}/offers:
+    {
+      get:
+        {
+          summary: Ofertas (sem URL de loja; use goUrl),
+          tags: [catalog],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/recommendations/categories:
+    {
+      get:
+        {
+          summary: Categorias/desejos sugeridos por regras para o tipo de evento,
+          tags: [recommendations],
+          parameters: [{ name: eventType, in: query, schema: { type: string } }],
+          responses: { "200": { description: ok } },
+        },
+    }
+
+  /api/v1/public/lists/{slug}:
+    get:
+      summary: Página pública (somente leitura; rascunhos só para gerentes)
+      tags: [public]
+      parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: ok }, "404": { $ref: "#/components/responses/Error" } }
+  /api/v1/public/sitemap:
+    {
+      get:
+        {
+          summary: Listas PUBLIC publicadas,
+          tags: [public],
+          responses: { "200": { description: ok } },
+        },
+    }
+  /api/v1/public/lists/{slug}/items/{itemId}/reservations:
+    post:
+      summary: Reserva ou registra compra (sem conta). Retorna manageToken uma única vez.
+      tags: [reservations]
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+        - { name: itemId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        {
+          required: true,
+          content:
+            { application/json: { schema: { $ref: "#/components/schemas/CreateReservation" } } },
+        }
+      responses:
+        {
+          "201": { description: criada },
+          "409": { description: ITEM_NOT_AVAILABLE },
+          "403": { description: RESERVATIONS_DISABLED },
+        }
+  /api/v1/reservations/{id}:
+    delete:
+      summary: Cancela com o token do convidado
+      tags: [reservations]
+      parameters:
+        [
+          { $ref: "#/components/parameters/id" },
+          { name: X-Reservation-Token, in: header, required: true, schema: { type: string } },
+        ]
+      responses: { "204": { description: ok }, "404": { $ref: "#/components/responses/Error" } }
+  /api/v1/reservations/{id}/confirm:
+    post:
+      summary: Converte reserva em compra confirmada
+      tags: [reservations]
+      parameters:
+        [
+          { $ref: "#/components/parameters/id" },
+          { name: X-Reservation-Token, in: header, required: true, schema: { type: string } },
+        ]
+      responses: { "204": { description: ok } }
+  /api/v1/manage/reservations/{id}:
+    {
+      delete:
+        {
+          summary: Dono cancela qualquer reserva do evento (audit log),
+          tags: [reservations],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "204": { description: ok } },
+        },
+    }
+
+  /api/v1/analytics/track:
+    post:
+      summary: Eventos de produto vindos do navegador (lista branca)
+      tags: [analytics]
+      description: Aceita apenas LIST_VIEWED, ITEM_VIEWED, OFFER_VIEWED, SHARE_CREATED, SHARE_OPENED. Eventos de negócio (reservas, cliques) são registrados no servidor.
+      responses: { "202": { description: aceito }, "400": { $ref: "#/components/responses/Error" } }
+  /go/{offerId}:
+    get:
+      summary: Redirect de afiliado. Registra o clique e responde 302 para a URL permitida pelo provider.
+      tags: [affiliate]
+      parameters:
+        - { name: offerId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: item, in: query, schema: { type: string, format: uuid } }
+        - { name: utm_source, in: query, schema: { type: string } }
+        - { name: utm_medium, in: query, schema: { type: string } }
+        - { name: utm_campaign, in: query, schema: { type: string } }
+      responses:
+        { "302": { description: redirect }, "404": { $ref: "#/components/responses/Error" } }
+
+components:
+  securitySchemes:
+    session: { type: apiKey, in: cookie, name: listou_session }
+  parameters:
+    id: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+  responses:
+    Error:
+      description: Erro padronizado
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string, example: LIST_NOT_FOUND }
+            message: { type: string }
+            requestId: { type: string }
+            fields: { type: object, additionalProperties: { type: string } }
+    Register:
+      {
+        type: object,
+        required: [name, email, password],
+        properties:
+          {
+            name: { type: string },
+            email: { type: string, format: email },
+            password: { type: string, minLength: 8, maxLength: 128 },
+          },
+      }
+    Login:
+      {
+        type: object,
+        required: [email, password],
+        properties: { email: { type: string }, password: { type: string } },
+      }
+    UserEnvelope:
+      {
+        type: object,
+        properties:
+          {
+            user:
+              {
+                type: object,
+                properties:
+                  {
+                    id: { type: string },
+                    email: { type: string },
+                    name: { type: string },
+                    role: { type: string, enum: [USER, ADMIN] },
+                  },
+              },
+          },
+      }
+    CreateEvent:
+      type: object
+      required: [type, title]
+      properties:
+        type:
+          {
+            type: string,
+            enum:
+              [
+                BABY_SHOWER,
+                WEDDING,
+                HOUSEWARMING,
+                BIRTHDAY,
+                GRADUATION,
+                TRAVEL,
+                CHRISTMAS,
+                WISHLIST,
+                CUSTOM,
+              ],
+          }
+        title: { type: string, maxLength: 120 }
+        hostNames: { type: string }
+        description: { type: string }
+        eventDate: { type: string, format: date }
+        location: { type: string }
+        slug: { type: string, description: "Opcional; gerado a partir do nome quando ausente" }
+        template: { type: string, enum: [EMPTY, SUGGESTED] }
+    CreateReservation:
+      type: object
+      required: [guestName]
+      properties:
+        kind: { type: string, enum: [RESERVATION, PURCHASE], default: RESERVATION }
+        quantity: { type: integer, minimum: 1, maximum: 99, default: 1 }
+        guestName: { type: string, maxLength: 80 }
+        guestContact: { type: string }
+        message: { type: string }
