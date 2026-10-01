@@ -8,6 +8,7 @@ CREATE TABLE list_items (
     description          TEXT,
     notes                TEXT,
     image_url            TEXT,
+    emoji                TEXT,
     external_url         TEXT,
     price_reference_cents BIGINT CHECK (price_reference_cents >= 0),
     currency             CHAR(3) NOT NULL DEFAULT 'BRL',

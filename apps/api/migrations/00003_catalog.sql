@@ -18,6 +18,8 @@ CREATE TABLE affiliate_providers (
     id          UUID PRIMARY KEY,
     code        TEXT NOT NULL CHECK (code ~ '^[A-Z0-9_]+$'),
     merchant_id UUID NOT NULL REFERENCES merchants (id) ON DELETE CASCADE,
+    -- Which Go adapter implements this provider (MOCK, AMAZON, ...).
+    adapter     TEXT NOT NULL CHECK (adapter ~ '^[A-Z0-9_]+$'),
     name        TEXT NOT NULL,
     enabled     BOOLEAN NOT NULL DEFAULT true,
     config      JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -25,7 +27,7 @@ CREATE TABLE affiliate_providers (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     CONSTRAINT affiliate_providers_code_key UNIQUE (code)
 );
-CREATE INDEX affiliate_providers_merchant_idx ON affiliate_providers (merchant_id);
+CREATE UNIQUE INDEX affiliate_providers_one_enabled_per_merchant ON affiliate_providers (merchant_id) WHERE enabled;
 
 CREATE TABLE products (
     id              UUID PRIMARY KEY,

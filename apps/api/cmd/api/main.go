@@ -43,9 +43,13 @@ func run() error {
 	}
 	defer pool.Close()
 
+	application := app.New(cfg, pool, log, version)
+	handler := application.Handler()
+	application.RunBackground(ctx)
+
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           app.New(cfg, pool, log, version).Handler(),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       15 * time.Second,
 		WriteTimeout:      30 * time.Second,
