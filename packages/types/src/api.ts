@@ -200,6 +200,34 @@ export const RecommendedCategory = z.object({
 });
 export type RecommendedCategory = z.infer<typeof RecommendedCategory>;
 
+export const SuggestedDesire = z.object({
+  title: z.string(),
+  emoji: z.string(),
+  quantity: z.number().int(),
+  importance: z.enum(["ESSENTIAL", "RECOMMENDED", "OPTIONAL"]),
+});
+export type SuggestedDesire = z.infer<typeof SuggestedDesire>;
+
+export const SuggestedCategory = z.object({
+  name: z.string(),
+  emoji: z.string(),
+  reason: z.string(),
+  desires: z.array(SuggestedDesire),
+});
+export type SuggestedCategory = z.infer<typeof SuggestedCategory>;
+
+export const Suggestions = z.object({
+  categories: z.array(SuggestedCategory),
+  source: z.string(),
+});
+export type Suggestions = z.infer<typeof Suggestions>;
+
+export const ApplySuggestionsResult = z.object({
+  addedItems: z.number().int(),
+  createdCategories: z.number().int(),
+});
+export type ApplySuggestionsResult = z.infer<typeof ApplySuggestionsResult>;
+
 export const DashboardActivity = z.object({
   kind: z.enum(["RESERVED", "PURCHASED", "CANCELLED", "CLICKED"]),
   itemTitle: z.string().nullable(),

@@ -17,6 +17,7 @@ import (
 	"github.com/listou/listou/apps/api/internal/dashboard"
 	"github.com/listou/listou/apps/api/internal/decision"
 	"github.com/listou/listou/apps/api/internal/events"
+	"github.com/listou/listou/apps/api/internal/listbuilder"
 	"github.com/listou/listou/apps/api/internal/lists"
 	"github.com/listou/listou/apps/api/internal/platform/config"
 	"github.com/listou/listou/apps/api/internal/platform/flags"
@@ -94,6 +95,8 @@ func (a *App) Handler() http.Handler {
 	lists.NewHandler(listsSvc).Register(root, authH.RequireFunc)
 	catalog.NewHandler(catalogSvc).Register(root, authH.RequireFunc)
 	recommendations.NewHandler(recs).Register(root)
+	builderSvc := listbuilder.NewService(eventsSvc, listsSvc, recommendations.NewBuilder(recs), recorder, a.flags.Enabled(flags.AIListBuilder))
+	listbuilder.NewHandler(builderSvc).Register(root, authH.RequireFunc)
 	publiclists.NewHandler(publicSvc, authH.Optional).Register(root)
 	reservations.NewHandler(a.reservations, secure).Register(root, guestLimit.Limit("guest"), authH.RequireFunc)
 	analytics.NewHandler(recorder, a.pool, secure).Register(root, trackLimit.Limit("track"))

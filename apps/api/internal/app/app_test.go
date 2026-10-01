@@ -89,7 +89,9 @@ func (r resp) path(keys ...string) any {
 func (r resp) str(keys ...string) string { s, _ := r.path(keys...).(string); return s }
 func (r resp) errCode() string           { return r.str("error", "code") }
 
-func setup(t *testing.T) http.Handler {
+func setup(t *testing.T) http.Handler { return setupWithFlags(t, "") }
+
+func setupWithFlags(t *testing.T, flagSpec string) http.Handler {
 	t.Helper()
 	url := os.Getenv("TEST_DATABASE_URL")
 	if url == "" {
@@ -113,7 +115,7 @@ func setup(t *testing.T) http.Handler {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	cfg := config.Config{Env: "test", PublicWebURL: "http://localhost:3000", SessionTTL: 3600e9, ReservationTTL: 3600e9}
+	cfg := config.Config{Env: "test", PublicWebURL: "http://localhost:3000", SessionTTL: 3600e9, ReservationTTL: 3600e9, FeatureFlags: flagSpec}
 	return app.New(cfg, pool, slog.New(slog.NewTextHandler(io.Discard, nil)), "test").Handler()
 }
 
@@ -350,6 +352,63 @@ func TestSurpriseModeHidesWhoBoughtWhat(t *testing.T) {
 	pub := (&client{t: t, h: h}).do("GET", "/api/v1/public/lists/"+slug, nil)
 	if it := pub.path("items").([]any)[0].(map[string]any); it["status"] != "PURCHASED" {
 		t.Fatalf("guests must still see availability: %v", it)
+	}
+}
+
+func TestAIListBuilder(t *testing.T) {
+	// Flag off: the feature does not exist.
+	off := register(t, setup(t), "off@example.com")
+	ev := off.do("POST", "/api/v1/events", map[string]any{"type": "HOUSEWARMING", "title": "Casa nova"})
+	if r := off.do("POST", "/api/v1/events/"+ev.str("event", "id")+"/suggestions", map[string]any{}); r.code != 404 || r.errCode() != "FEATURE_DISABLED" {
+		t.Fatalf("flag off must hide the feature, got %d %v", r.code, r.body)
+	}
+
+	h := setupWithFlags(t, "AI_LIST_BUILDER=true")
+	owner, other := register(t, h, "owner@example.com"), register(t, h, "other@example.com")
+	r := owner.do("POST", "/api/v1/events", map[string]any{"type": "HOUSEWARMING", "title": "Casa nova"})
+	eventID, listID := r.str("event", "id"), r.str("event", "listId")
+	owner.do("POST", "/api/v1/lists/"+listID+"/items", map[string]any{"title": "Air fryer 5L"})
+
+	if r := other.do("POST", "/api/v1/events/"+eventID+"/suggestions", map[string]any{}); r.code != 404 {
+		t.Fatalf("strangers must get 404, got %d", r.code)
+	}
+	sug := owner.do("POST", "/api/v1/events/"+eventID+"/suggestions", map[string]any{"prompt": "banheiro"})
+	if sug.code != 200 {
+		t.Fatalf("suggest: %d %v", sug.code, sug.body)
+	}
+	raw := string(mustJSON(sug.body))
+	if strings.Contains(raw, "Air fryer") || strings.Contains(raw, "http") || strings.Contains(raw, "price") {
+		t.Fatalf("suggestions must skip existing items and carry no products/links: %s", raw)
+	}
+	cats := sug.path("categories").([]any)
+	if cats[0].(map[string]any)["name"] != "Banheiro" {
+		t.Fatalf("prompt should rank the bathroom first: %v", cats[0])
+	}
+
+	apply := map[string]any{"categories": []any{map[string]any{"name": "Banheiro", "emoji": "🛁", "desires": []any{
+		map[string]any{"title": "Jogo de toalhas", "emoji": "🧺", "quantity": 2, "priority": "HIGH"},
+	}}}}
+	a := owner.do("POST", "/api/v1/events/"+eventID+"/suggestions/apply", apply)
+	if a.code != 201 || a.path("addedItems").(float64) != 1 {
+		t.Fatalf("apply: %d %v", a.code, a.body)
+	}
+	// A second apply reuses the category instead of duplicating it.
+	owner.do("POST", "/api/v1/events/"+eventID+"/suggestions/apply", apply)
+	view := owner.do("GET", "/api/v1/events/"+eventID+"/list", nil)
+	banheiros := 0
+	for _, c := range view.path("categories").([]any) {
+		if c.(map[string]any)["name"] == "Banheiro" {
+			banheiros++
+		}
+	}
+	if banheiros != 1 || len(view.path("items").([]any)) != 3 {
+		t.Fatalf("expected 1 Banheiro category and 3 items: %v", view.body)
+	}
+	if r := other.do("POST", "/api/v1/events/"+eventID+"/suggestions/apply", apply); r.code != 404 {
+		t.Fatalf("strangers cannot apply, got %d", r.code)
+	}
+	if r := owner.do("POST", "/api/v1/events/"+eventID+"/suggestions/apply", map[string]any{"categories": []any{}}); r.code != 422 {
+		t.Fatalf("empty apply must be a validation error, got %d", r.code)
 	}
 }
 

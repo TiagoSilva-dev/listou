@@ -12,6 +12,7 @@ import {
   Settings,
   Share2,
   ShoppingBag,
+  Sparkles,
 } from "lucide-react";
 import { z } from "zod";
 import {
@@ -37,6 +38,7 @@ import {
 import { api, ApiError } from "@/lib/api";
 import { plural, STATUS_LABEL, STATUS_TONE } from "@/lib/labels";
 import { AddItemSheet } from "./add-item-sheet";
+import { SuggestionsSheet } from "./suggestions-sheet";
 import { CoverArt } from "./cover-art";
 import { EditItemSheet } from "./edit-item-sheet";
 import { ItemVisual } from "./item-visual";
@@ -48,6 +50,7 @@ interface Props {
   initialList: OwnerList;
   siteUrl: string;
   justCreated: boolean;
+  aiBuilder: boolean;
 }
 
 const ACTIVITY_LABEL = {
@@ -57,12 +60,19 @@ const ACTIVITY_LABEL = {
   CLICKED: "abriu a loja de",
 } as const;
 
-export function EventWorkspace({ initialDashboard, initialList, siteUrl, justCreated }: Props) {
+export function EventWorkspace({
+  initialDashboard,
+  initialList,
+  siteUrl,
+  justCreated,
+  aiBuilder,
+}: Props) {
   const toast = useToast();
   const [dash, setDash] = useState(initialDashboard);
   const [list, setList] = useState(initialList);
   const [category, setCategory] = useState("all");
   const [addOpen, setAddOpen] = useState(false);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const [editing, setEditing] = useState<ListItem | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -255,9 +265,16 @@ export function EventWorkspace({ initialDashboard, initialList, siteUrl, justCre
       <section className="flex flex-col gap-5" aria-label="Itens da lista">
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-display text-2xl font-semibold">Itens da lista</h2>
-          <Button onClick={() => setAddOpen(true)}>
-            <Plus className="size-4" /> Adicionar item
-          </Button>
+          <div className="flex items-center gap-2">
+            {aiBuilder ? (
+              <Button variant="soft" onClick={() => setSuggestOpen(true)}>
+                <Sparkles className="size-4" /> Ideias
+              </Button>
+            ) : null}
+            <Button onClick={() => setAddOpen(true)}>
+              <Plus className="size-4" /> Adicionar item
+            </Button>
+          </div>
         </div>
 
         {list.items.length > 0 && tabs.length > 2 ? (
@@ -355,6 +372,14 @@ export function EventWorkspace({ initialDashboard, initialList, siteUrl, justCre
         categories={list.categories}
         onAdded={() => void refresh()}
       />
+      {aiBuilder ? (
+        <SuggestionsSheet
+          open={suggestOpen}
+          onOpenChange={setSuggestOpen}
+          eventId={event.id}
+          onApplied={() => void refresh()}
+        />
+      ) : null}
       <EditItemSheet
         item={editing}
         categories={list.categories}

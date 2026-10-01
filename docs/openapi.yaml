@@ -298,6 +298,25 @@ paths:
         },
     }
 
+  /api/v1/events/{id}/suggestions:
+    post:
+      summary: Ideias de desejos que ainda não estão na lista (flag AI_LIST_BUILDER; 404 FEATURE_DISABLED quando desligada)
+      tags: [recommendations]
+      parameters: [{ $ref: "#/components/parameters/id" }]
+      security: [{ session: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { prompt: { type: string, maxLength: 300 } } }
+      responses: { "200": { description: ok }, "404": { $ref: "#/components/responses/Error" } }
+  /api/v1/events/{id}/suggestions/apply:
+    post:
+      summary: Adiciona à lista os desejos escolhidos (1 a 40), reutilizando categorias existentes pelo nome
+      tags: [recommendations]
+      parameters: [{ $ref: "#/components/parameters/id" }]
+      security: [{ session: [] }]
+      responses: { "201": { description: criado }, "422": { $ref: "#/components/responses/Error" } }
+
   /api/v1/public/lists/{slug}:
     get:
       summary: Página pública (somente leitura; rascunhos só para gerentes)

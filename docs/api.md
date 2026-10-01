@@ -57,11 +57,20 @@ Base: `/api/v1` (JSON, camelCase). Especificação: [`openapi.yaml`](openapi.yam
 | POST   | `/analytics/track`                                 | lista branca de eventos de navegador                       |
 | GET    | `/go/{offerId}?item=&utm_*`                        | `302` para a URL do provider; registra clique              |
 
+## AI List Builder (flag `AI_LIST_BUILDER`)
+
+| Método | Rota                             | Observações                                                                                                           |
+| ------ | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| POST   | `/events/{id}/suggestions`       | `{prompt?}` → categorias com desejos que ainda não estão na lista; só desejos, sem produto/preço/link                 |
+| POST   | `/events/{id}/suggestions/apply` | `{categories:[{name,emoji,desires:[{title,emoji,quantity,priority}]}]}` (1 a 40 itens); reutiliza categoria pelo nome |
+
+Com a flag desligada ambas respondem `404 FEATURE_DISABLED`. Eventos de outro usuário respondem `404`.
+
 ## Códigos de erro frequentes
 
 `UNAUTHORIZED`, `FORBIDDEN`, `VALIDATION_FAILED`, `EMAIL_TAKEN`, `INVALID_CREDENTIALS`, `EVENT_NOT_FOUND`,
 `LIST_NOT_FOUND`, `ITEM_NOT_FOUND`, `SLUG_TAKEN`, `ITEM_NOT_AVAILABLE`, `RESERVATIONS_DISABLED`,
 `RESERVATION_NOT_FOUND`, `RESERVATION_NOT_ACTIVE`, `ITEM_QUANTITY_CONFLICT`, `OFFER_NOT_FOUND`,
-`CSRF_REJECTED`, `RATE_LIMITED`.
+`CSRF_REJECTED`, `RATE_LIMITED`, `FEATURE_DISABLED`.
 
 Recursos de outro usuário respondem `404` (não `403`) para não revelar existência.

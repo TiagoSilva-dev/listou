@@ -29,6 +29,8 @@ const (
 	ShareCreated    = "SHARE_CREATED"
 	ShareOpened     = "SHARE_OPENED"
 	UserRegistered  = "USER_REGISTERED"
+	AISuggested     = "AI_SUGGESTIONS_REQUESTED"
+	AIApplied       = "AI_SUGGESTIONS_APPLIED"
 )
 
 // clientEvents are the only names browsers may send to /analytics/track;

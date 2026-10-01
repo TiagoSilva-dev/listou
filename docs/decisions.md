@@ -72,3 +72,13 @@ MVP. Capas de evento geradas por gradientes temáticos quando não há foto.
 **Contexto:** o modelo conceitual cita `GiftListMember`, mas permissões são do evento inteiro.
 **Decisão:** tabela `event_members` (CO_OWNER, VIEWER). Dono é `events.owner_id`.
 **Consequências:** múltiplas listas por evento herdam as permissões.
+
+## ADR-0010: AI List Builder sobre a interface `recommendations.Provider`
+
+**Status:** aceito (M10).
+
+**Contexto:** o produto precisa sugerir desejos para completar a lista, mas ainda não há LLM nem Jev contratados, e a aplicação não pode depender deles.
+
+**Decisão:** `recommendations.Builder` ordena e filtra o que um `Provider` devolve (remove o que a lista já tem por comparação de tokens, prioriza por importância e pelo texto livre do usuário, limita a 24 desejos). Hoje o provider é por regras; um provider LLM/Jev entra pela mesma interface. O módulo `listbuilder` expõe sugerir e aplicar atrás da flag `AI_LIST_BUILDER` (404 `FEATURE_DISABLED` quando desligada). Sugestões são apenas desejos: nunca produtos, preços ou links; o produto continua vindo do `MatchingService`.
+
+**Consequências:** trocar o motor não muda API nem UI. O texto livre só afeta a ordenação até existir um provider generativo; qualquer provider futuro deve tratar o prompt como dado não confiável e passar pelos mesmos limites.

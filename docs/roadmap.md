@@ -12,7 +12,7 @@
 | 7   | Affiliate Redirect    | `/go/{offerId}`, registro de clique                                                                                          | ✅     |
 | 8   | Sharing               | copiar link, WhatsApp, e-mail, QR Code, Web Share, OG image                                                                  | ✅     |
 | 9   | Analytics             | eventos de produto, dashboard do criador                                                                                     | 🟡     |
-| 10  | AI Builder            | `RecommendationProvider`, construtor com IA (flag `AI_LIST_BUILDER`)                                                         | —      |
+| 10  | AI Builder            | `RecommendationProvider`, construtor com IA (flag `AI_LIST_BUILDER`)                                                         | ✅     |
 | 11  | Real Marketplace      | 1º provider real após leitura da documentação oficial                                                                        | —      |
 | 12  | Growth & Optimization | templates, comparação de ofertas, Jev matching se provar ganho                                                               | —      |
 
