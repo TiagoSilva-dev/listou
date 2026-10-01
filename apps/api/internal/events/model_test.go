@@ -4,7 +4,7 @@ import "testing"
 
 func TestSlugify(t *testing.T) {
 	cases := map[string]string{
-		"Tiago & Júlia":            "tiago-e-julia",
+		"João & Maria":             "joao-e-maria",
 		"  Chá de Bebê da Ana!!  ": "cha-de-bebe-da-ana",
 		"Casamento — Ção / 2026":   "casamento-cao-2026",
 	}
@@ -17,7 +17,7 @@ func TestSlugify(t *testing.T) {
 
 func TestValidSlug(t *testing.T) {
 	for s, want := range map[string]bool{
-		"tiago-e-julia": true, "ab": false, "-abc": false, "abc-": false, "a--b": false,
+		"joao-e-maria": true, "ab": false, "-abc": false, "abc-": false, "a--b": false,
 		"Tiago": false, "dashboard": false, "lista-2026": true,
 	} {
 		if got := ValidSlug(s); got != want {

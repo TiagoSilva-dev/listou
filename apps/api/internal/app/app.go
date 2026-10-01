@@ -9,7 +9,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/listou/listou/apps/api/internal/admin"
 	"github.com/listou/listou/apps/api/internal/affiliate"
+	"github.com/listou/listou/apps/api/internal/affiliate/curated"
+	"github.com/listou/listou/apps/api/internal/affiliate/link"
 	"github.com/listou/listou/apps/api/internal/affiliate/mock"
 	"github.com/listou/listou/apps/api/internal/analytics"
 	"github.com/listou/listou/apps/api/internal/auth"
@@ -65,7 +68,9 @@ func (a *App) Handler() http.Handler {
 	secure := a.cfg.CookieSecure
 
 	recorder := analytics.NewRecorder(a.pool)
-	registry := affiliate.NewRegistry(mock.New(a.cfg.PublicWebURL))
+	curatedRepo := curated.NewRepository(a.pool)
+	curatedProvider := curated.New(curatedRepo)
+	registry := affiliate.NewRegistry(mock.New(a.cfg.PublicWebURL), link.New(), curatedProvider)
 	recs := recommendations.RulesProvider{}
 	decider := decision.RuleEngine{}
 
@@ -83,6 +88,7 @@ func (a *App) Handler() http.Handler {
 	guestLimit := httpx.NewRateLimiter(30, time.Minute)
 	trackLimit := httpx.NewRateLimiter(120, time.Minute)
 	goLimit := httpx.NewRateLimiter(120, time.Minute)
+	linkLimit := httpx.NewRateLimiter(20, time.Minute)
 
 	root := http.NewServeMux()
 	health.NewHandler(a.pool, a.version).Register(root)
@@ -93,7 +99,8 @@ func (a *App) Handler() http.Handler {
 	authH.Register(root, authLimit.Limit("auth"))
 	events.NewHandler(eventsSvc).Register(root, authH.RequireFunc)
 	lists.NewHandler(listsSvc).Register(root, authH.RequireFunc)
-	catalog.NewHandler(catalogSvc).Register(root, authH.RequireFunc)
+	catalog.NewHandler(catalogSvc).Register(root, authH.RequireFunc, linkLimit.Limit("link"))
+	admin.NewHandler(admin.NewService(a.pool, curatedRepo)).Register(root, authH.RequireAdminFunc)
 	recommendations.NewHandler(recs).Register(root)
 	builderSvc := listbuilder.NewService(eventsSvc, listsSvc, recommendations.NewBuilder(recs), recorder, a.flags.Enabled(flags.AIListBuilder))
 	listbuilder.NewHandler(builderSvc).Register(root, authH.RequireFunc)

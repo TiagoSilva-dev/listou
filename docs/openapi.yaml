@@ -265,6 +265,77 @@ paths:
           responses: { "200": { description: ok } },
         },
     }
+  /api/v1/products/link-preview:
+    {
+      post:
+        {
+          summary: Lê título e imagem públicos de uma URL de produto (sem preço),
+          tags: [catalog],
+          security: [{ session: [] }],
+          responses:
+            { "200": { description: ok }, "400": { description: INVALID_LINK } },
+        },
+    }
+  /api/v1/products/import-link:
+    {
+      post:
+        {
+          summary: Persiste um produto a partir de uma URL colada,
+          tags: [catalog],
+          security: [{ session: [] }],
+          responses:
+            {
+              "200": { description: ok },
+              "400": { description: INVALID_LINK ou LINK_UNREADABLE },
+            },
+        },
+    }
+  /api/v1/admin/curated-products:
+    {
+      get:
+        {
+          summary: Lista o catálogo curado e as lojas disponíveis (somente ADMIN),
+          tags: [admin],
+          security: [{ session: [] }],
+          responses: { "200": { description: ok }, "403": { description: FORBIDDEN } },
+        },
+      post:
+        {
+          summary: Cria um produto curado com links de afiliado (somente ADMIN),
+          tags: [admin],
+          security: [{ session: [] }],
+          responses:
+            {
+              "201": { description: criado },
+              "403": { description: FORBIDDEN },
+              "422": { description: VALIDATION_FAILED },
+            },
+        },
+    }
+  /api/v1/admin/curated-products/{id}:
+    {
+      put:
+        {
+          summary: Substitui campos e ofertas de um produto curado (somente ADMIN),
+          tags: [admin],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses:
+            {
+              "200": { description: ok },
+              "403": { description: FORBIDDEN },
+              "404": { description: CURATED_PRODUCT_NOT_FOUND },
+            },
+        },
+      delete:
+        {
+          summary: Remove um produto curado (somente ADMIN),
+          tags: [admin],
+          parameters: [{ $ref: "#/components/parameters/id" }],
+          security: [{ session: [] }],
+          responses: { "204": { description: removido }, "403": { description: FORBIDDEN } },
+        },
+    }
   /api/v1/products/{id}:
     {
       get:

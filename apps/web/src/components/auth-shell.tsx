@@ -23,7 +23,7 @@ export function AuthShell({
           {children}
         </div>
       </section>
-      <CoverArt theme="lavender" emoji="🎁" className="hidden items-end p-12 lg:flex">
+      <CoverArt theme="lavender" emoji="gift" className="hidden items-end p-12 lg:flex">
         <figure className="flex max-w-md flex-col gap-4">
           <blockquote className="font-display text-ink text-balance text-3xl font-semibold leading-tight">
             “Em dois minutos nossa lista estava no ar. Os convidados amaram a facilidade.”

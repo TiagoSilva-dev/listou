@@ -2,18 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Sparkles, PenLine } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, PenLine } from "lucide-react";
 import { z } from "zod";
 import { EVENT_TYPES, Event, EventType, eventTypeMeta } from "@listou/types";
-import { Badge, Button, cn, Field, Input, Textarea } from "@listou/ui";
+import { Badge, Button, cn, Field, Input, Textarea, Glyph } from "@listou/ui";
 import { api, applyFieldErrors } from "@/lib/api";
 import { Logo } from "./logo";
 
 type Template = "EMPTY" | "SUGGESTED";
 
 const titleHints: Partial<Record<EventType, string>> = {
-  WEDDING: "Casamento de Tiago e Julia",
-  HOUSEWARMING: "Chá de casa nova do Tiago e Julia",
+  WEDDING: "Casamento de João e Maria",
+  HOUSEWARMING: "Chá de casa nova do João e Maria",
   BABY_SHOWER: "Chá de bebê da Helena",
   BIRTHDAY: "Aniversário de 30 anos da Ana",
   GRADUATION: "Formatura da Mariana",
@@ -119,7 +119,7 @@ export function CreateWizard({ initialType }: { initialType: EventType | null })
                         aria-hidden
                         className="duration-(--duration-base) ease-spring text-4xl transition-transform group-hover:scale-110"
                       >
-                        {t.emoji}
+                        <Glyph name={t.emoji} className="text-primary" />
                       </span>
                       <span className="font-semibold">{t.label}</span>
                     </button>
@@ -152,7 +152,7 @@ export function CreateWizard({ initialType }: { initialType: EventType | null })
                   label="Quem são os anfitriões?"
                   htmlFor="hostNames"
                   optional
-                  hint="Aparece em destaque na página da lista, ex.: Tiago & Julia."
+                  hint="Aparece em destaque na página da lista, ex.: João & Maria."
                 >
                   <Input
                     id="hostNames"
@@ -185,7 +185,7 @@ export function CreateWizard({ initialType }: { initialType: EventType | null })
           {step === 3 && meta ? (
             <>
               <Heading
-                emoji="✨"
+                emoji="bulb"
                 title="Vamos montar sua lista"
                 subtitle="Como você prefere começar?"
               />
@@ -193,7 +193,7 @@ export function CreateWizard({ initialType }: { initialType: EventType | null })
                 <ChoiceCard
                   selected={template === "SUGGESTED"}
                   onSelect={() => setTemplate("SUGGESTED")}
-                  icon={<Sparkles className="size-5" />}
+                  icon={<Glyph name="bulb" className="size-5" />}
                   title="Começar com sugestões"
                   text={
                     meta.suggestedCategories.length
@@ -210,8 +210,8 @@ export function CreateWizard({ initialType }: { initialType: EventType | null })
                   text="Comece com a lista vazia e adicione item por item, de qualquer loja ou à mão."
                 />
                 <div className="rounded-card border-line-strong flex items-center gap-4 border border-dashed p-5 opacity-70">
-                  <span className="bg-canvas-deep grid size-11 place-items-center rounded-full">
-                    🤖
+                  <span className="bg-canvas-deep text-primary grid size-11 place-items-center rounded-full text-xl">
+                    <Glyph name="bulb" />
                   </span>
                   <div className="flex flex-1 flex-col gap-0.5">
                     <p className="font-semibold">Criar com IA</p>
@@ -262,9 +262,7 @@ function Heading({ title, subtitle, emoji }: { title: string; subtitle: string; 
   return (
     <div className="flex flex-col gap-2">
       {emoji ? (
-        <span aria-hidden className="text-4xl">
-          {emoji}
-        </span>
+        <Glyph name={emoji} className="text-primary text-4xl" />
       ) : null}
       <h1 className="font-display text-display-sm sm:text-display text-balance font-semibold tracking-tight">
         {title}

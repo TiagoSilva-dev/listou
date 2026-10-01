@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { cn } from "../cn";
+import { Glyph } from "./glyph";
 
 export interface EmptyStateProps {
-  emoji?: string;
+  /** Glyph key (or legacy emoji) from the Listou icon set. */
+  icon?: string;
   title: string;
   description?: string;
   action?: ReactNode;
@@ -10,7 +12,7 @@ export interface EmptyStateProps {
 }
 
 export function EmptyState({
-  emoji = "🎁",
+  icon = "gift",
   title,
   description,
   action,
@@ -25,9 +27,9 @@ export function EmptyState({
     >
       <span
         aria-hidden
-        className="bg-primary-soft grid size-16 place-items-center rounded-full text-3xl"
+        className="bg-primary-soft text-primary grid size-16 place-items-center rounded-full text-3xl"
       >
-        {emoji}
+        <Glyph name={icon} />
       </span>
       <div className="flex max-w-sm flex-col gap-1.5">
         <h3 className="font-display text-ink text-xl font-semibold">{title}</h3>

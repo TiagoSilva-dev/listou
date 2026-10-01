@@ -118,8 +118,8 @@ test("unknown and draft lists are not public", async ({ page }) => {
 });
 
 test("seeded public list renders on mobile without horizontal scroll", async ({ page }) => {
-  await page.goto("/l/tiago-e-julia");
-  await expect(page.getByRole("heading", { name: "Tiago & Julia" })).toBeVisible();
+  await page.goto("/l/joao-e-maria");
+  await expect(page.getByRole("heading", { name: "João & Maria" })).toBeVisible();
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
   );

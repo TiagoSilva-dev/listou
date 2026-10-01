@@ -41,6 +41,8 @@ providers); providers que exigirem notificação própria implementam a interfac
 | Provider                              | Status                                                            |
 | ------------------------------------- | ----------------------------------------------------------------- |
 | `MOCK`                                | ✅ catálogo de demonstração (dados fictícios, rotulados como tal) |
+| `CURATED`                             | ✅ catálogo manual com nossos links de afiliado (`integrations/curated.md`) |
+| `LINK`                                | ✅ link colado pelo usuário, sem API de loja (`integrations/link.md`) |
 | Amazon (Associates / Creators API)    | ⛔ aguardando documentação oficial e credenciais                  |
 | Mercado Livre (programa de afiliados) | ⛔ aguardando documentação oficial e credenciais                  |
 | Shopee (Affiliate Program)            | ⛔ aguardando documentação oficial e credenciais                  |

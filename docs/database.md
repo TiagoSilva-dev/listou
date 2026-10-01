@@ -48,6 +48,7 @@ erDiagram
 | `reservations`                     | `kind` RESERVATION/PURCHASE; `status` ACTIVE/CANCELLED/EXPIRED/CONFIRMED; `token_hash` para o convidado gerenciar sem conta; `expires_at`.                                                 |
 | `click_events`                     | append-only; sem IP; visitor id aleatório; host do referrer; UTM; device class.                                                                                                            |
 | `analytics_events`                 | eventos internos de produto (`LIST_VIEWED`, `SHARE_CREATED`, ...).                                                                                                                         |
+| `curated_products`, `curated_offers` | catálogo curado mantido no painel admin (`external_id` estável, `active`; uma oferta por loja com o link de afiliado). |
 | `audit_logs`                       | operações críticas (publicar, excluir evento, cancelar reserva pelo dono).                                                                                                                 |
 
 ## Índices (por query)

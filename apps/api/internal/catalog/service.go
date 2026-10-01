@@ -148,6 +148,13 @@ func (s *Service) Import(ctx context.Context, adapter, externalID string) (Produ
 		}
 		return Product{}, nil, fmt.Errorf("import: %w", err)
 	}
+	if strings.TrimSpace(pd.Title) == "" {
+		return Product{}, nil, ErrLinkUnreadable
+	}
+	return s.store(ctx, adapter, pd)
+}
+
+func (s *Service) store(ctx context.Context, adapter string, pd affiliate.ProductData) (Product, []Offer, error) {
 	merchants, err := s.repo.EnabledMerchants(ctx, s.pool)
 	if err != nil {
 		return Product{}, nil, err

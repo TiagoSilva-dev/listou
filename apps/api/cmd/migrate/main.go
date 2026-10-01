@@ -1,6 +1,8 @@
 // Command migrate applies versioned schema migrations and development seeds.
 //
-//	go run ./cmd/migrate up|down|status|reset|seed
+//	go run ./cmd/migrate up|down|status|reset|seed|admin <email> [...]
+//
+// Several commands may be chained, e.g. `migrate up seed`.
 package main
 
 import (
@@ -8,6 +10,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -24,7 +27,7 @@ func main() {
 
 func run(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: migrate up|down|status|reset|seed")
+		return fmt.Errorf("usage: migrate up|down|status|reset|seed|admin <email>")
 	}
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
@@ -41,7 +44,40 @@ func run(args []string) error {
 		return err
 	}
 	ctx := context.Background()
-	switch args[0] {
+	for i := 0; i < len(args); i++ {
+		cmd := args[i]
+		if cmd == "admin" { // takes the user's e-mail as the next argument
+			if i+1 >= len(args) {
+				return fmt.Errorf("usage: migrate admin <email>")
+			}
+			i++
+			if err := makeAdmin(ctx, db, args[i]); err != nil {
+				return err
+			}
+			continue
+		}
+		if err := runCommand(ctx, db, url, cmd); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// makeAdmin grants the ADMIN role to an existing account (the only way to get one).
+func makeAdmin(ctx context.Context, db *sql.DB, email string) error {
+	res, err := db.ExecContext(ctx, `UPDATE users SET role = 'ADMIN' WHERE email = $1`, strings.ToLower(strings.TrimSpace(email)))
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return fmt.Errorf("no user with e-mail %q", email)
+	}
+	fmt.Println("migrate: admin role granted to", email)
+	return nil
+}
+
+func runCommand(ctx context.Context, db *sql.DB, url, cmd string) error {
+	switch cmd {
 	case "up":
 		return goose.UpContext(ctx, db, ".")
 	case "down":
@@ -61,6 +97,6 @@ func run(args []string) error {
 	case "seed":
 		return seed(ctx, url)
 	default:
-		return fmt.Errorf("unknown command %q", args[0])
+		return fmt.Errorf("unknown command %q", cmd)
 	}
 }

@@ -13,7 +13,7 @@
 | 8   | Sharing               | copiar link, WhatsApp, e-mail, QR Code, Web Share, OG image                                                                  | ✅     |
 | 9   | Analytics             | eventos de produto, dashboard do criador                                                                                     | 🟡     |
 | 10  | AI Builder            | `RecommendationProvider`, construtor com IA (flag `AI_LIST_BUILDER`)                                                         | ✅     |
-| 11  | Real Marketplace      | 1º provider real após leitura da documentação oficial                                                                        | —      |
+| 11  | Real Marketplace      | adicionar por link colado (`LINK`) ✅; 1º provider de API real após leitura da documentação oficial                         | 🟡     |
 | 12  | Growth & Optimization | templates, comparação de ofertas, Jev matching se provar ganho                                                               | —      |
 
 Primeiro release utilizável = milestones 1–9.

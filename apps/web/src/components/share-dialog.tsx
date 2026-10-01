@@ -35,7 +35,7 @@ export function ShareDialog({ open, onOpenChange, url, title, slug }: ShareDialo
     };
   }, [open, url]);
 
-  const message = `Olha a nossa lista: ${title} 💜`;
+  const message = `Olha a nossa lista: ${title}`;
 
   function track(channel: string) {
     void apiVoid("/analytics/track", {

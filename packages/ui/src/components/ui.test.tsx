@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { Avatar, Button, CategoryTabs, cn, Price, Progress } from "../index";
+import { Avatar, Button, CategoryTabs, cn, glyphName, Price, Progress } from "../index";
 
 afterEach(cleanup);
 
@@ -30,8 +30,8 @@ describe("ui", () => {
   });
 
   it("shows initials for couples", () => {
-    render(<Avatar name="Tiago & Julia" />);
-    expect(screen.getByLabelText("Tiago & Julia").textContent).toBe("TJ");
+    render(<Avatar name="João & Maria" />);
+    expect(screen.getByLabelText("João & Maria").textContent).toBe("TJ");
   });
 
   it("switches category tabs", () => {
@@ -40,7 +40,7 @@ describe("ui", () => {
       <CategoryTabs
         tabs={[
           { id: "all", label: "Tudo" },
-          { id: "k", label: "Cozinha", emoji: "🍳" },
+          { id: "k", label: "Cozinha", emoji: "pan" },
         ]}
         value="all"
         onChange={onChange}
@@ -48,5 +48,13 @@ describe("ui", () => {
     );
     fireEvent.click(screen.getByRole("tab", { name: /Cozinha/ }));
     expect(onChange).toHaveBeenCalledWith("k");
+  });
+
+  it("maps legacy emoji (with or without variation selector) to Listou glyphs", () => {
+    expect(glyphName("🍳")).toBe("pan");
+    expect(glyphName("🛏️")).toBe("bed");
+    expect(glyphName("gift")).toBe("gift");
+    expect(glyphName("🦄")).toBe("gift");
+    expect(glyphName(null)).toBe("gift");
   });
 });

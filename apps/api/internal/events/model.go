@@ -198,7 +198,7 @@ func ValidSlug(s string) bool {
 	return !prevDash
 }
 
-// Slugify turns "Tiago & Júlia" into "tiago-e-julia".
+// Slugify turns "João & Maria" into "joao-e-maria".
 func Slugify(s string) string {
 	t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 	plain, _, err := transform.String(t, strings.ToLower(s))

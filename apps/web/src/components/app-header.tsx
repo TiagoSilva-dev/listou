@@ -7,7 +7,7 @@ import { Avatar, Button, buttonVariants } from "@listou/ui";
 import { apiVoid } from "@/lib/api";
 import { Logo } from "./logo";
 
-export function AppHeader({ userName }: { userName: string }) {
+export function AppHeader({ userName, isAdmin }: { userName: string; isAdmin?: boolean }) {
   const router = useRouter();
   async function logout() {
     await apiVoid("/auth/logout", { method: "POST" });
@@ -25,6 +25,14 @@ export function AppHeader({ userName }: { userName: string }) {
           >
             Minhas listas
           </Link>
+          {isAdmin ? (
+            <Link
+              href="/admin/produtos"
+              className="text-ink-soft hover:text-ink hidden text-sm font-semibold sm:block"
+            >
+              Produtos curados
+            </Link>
+          ) : null}
         </div>
         <div className="flex items-center gap-2">
           <Link href="/criar" className={buttonVariants({ variant: "soft", size: "sm" })}>

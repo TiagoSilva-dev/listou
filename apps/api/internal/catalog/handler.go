@@ -13,9 +13,13 @@ type Handler struct{ svc *Service }
 
 func NewHandler(svc *Service) *Handler { return &Handler{svc: svc} }
 
-func (h *Handler) Register(mux *http.ServeMux, require func(http.HandlerFunc) http.Handler) {
+// Register wires the routes. linkLimit throttles the endpoints that make the
+// server fetch a user-supplied URL.
+func (h *Handler) Register(mux *http.ServeMux, require func(http.HandlerFunc) http.Handler, linkLimit httpx.Middleware) {
 	mux.Handle("GET /api/v1/products/search", require(h.search))
 	mux.Handle("POST /api/v1/products/import", require(h.importProduct))
+	mux.Handle("POST /api/v1/products/link-preview", linkLimit(require(h.linkPreview)))
+	mux.Handle("POST /api/v1/products/import-link", linkLimit(require(h.importLink)))
 	mux.Handle("GET /api/v1/products/{id}", require(h.get))
 	mux.Handle("GET /api/v1/products/{id}/offers", require(h.offers))
 }
@@ -52,6 +56,39 @@ func (h *Handler) importProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	p, offers, err := h.svc.Import(r.Context(), in.ProviderCode, in.ExternalID)
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"product": p, "offers": offers})
+}
+
+type linkInput struct {
+	URL   string `json:"url"`
+	Title string `json:"title"`
+}
+
+func (h *Handler) linkPreview(w http.ResponseWriter, r *http.Request) {
+	var in linkInput
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	p, err := h.svc.PreviewLink(r.Context(), in.URL)
+	if err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	httpx.JSON(w, http.StatusOK, map[string]any{"preview": p})
+}
+
+func (h *Handler) importLink(w http.ResponseWriter, r *http.Request) {
+	var in linkInput
+	if err := httpx.Decode(r, &in); err != nil {
+		httpx.Fail(w, r, err)
+		return
+	}
+	p, offers, err := h.svc.ImportLink(r.Context(), in.URL, in.Title)
 	if err != nil {
 		httpx.Fail(w, r, err)
 		return

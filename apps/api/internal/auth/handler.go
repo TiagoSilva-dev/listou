@@ -114,6 +114,17 @@ func (h *Handler) Require(next http.Handler) http.Handler {
 // RequireFunc is Require for plain handler functions.
 func (h *Handler) RequireFunc(fn http.HandlerFunc) http.Handler { return h.Require(fn) }
 
+// RequireAdminFunc is RequireFunc restricted to users with the ADMIN role.
+func (h *Handler) RequireAdminFunc(fn http.HandlerFunc) http.Handler {
+	return h.Require(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if u, _ := UserFrom(r.Context()); !u.IsAdmin() {
+			httpx.Fail(w, r, httpx.ErrForbidden)
+			return
+		}
+		fn(w, r)
+	}))
+}
+
 // Optional returns the signed-in user for routes that also serve anonymous visitors.
 func (h *Handler) Optional(r *http.Request) *User {
 	c, err := r.Cookie(SessionCookie)

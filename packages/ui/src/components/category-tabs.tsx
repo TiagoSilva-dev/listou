@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "../cn";
+import { Glyph } from "./glyph";
 
 export interface CategoryTab {
   id: string;
@@ -38,7 +39,7 @@ export function CategoryTabs({ tabs, value, onChange, className }: CategoryTabsP
                 : "bg-surface text-ink-soft shadow-hairline hover:text-ink",
             )}
           >
-            {tab.emoji ? <span aria-hidden>{tab.emoji}</span> : null}
+            {tab.emoji ? <Glyph name={tab.emoji} className="size-4" /> : null}
             {tab.label}
             {tab.count != null ? (
               <span

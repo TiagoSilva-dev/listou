@@ -1,14 +1,18 @@
 import Link from "next/link";
-import { ArrowRight, Gift, HeartHandshake, Lock, Share2, Sparkles, Store } from "lucide-react";
+import { ArrowRight, Gift, HeartHandshake, Lock, Share2, Store } from "lucide-react";
 import { EVENT_TYPES } from "@listou/types";
-import { Badge, buttonVariants, Progress } from "@listou/ui";
+import { Badge, buttonVariants, Progress, Glyph } from "@listou/ui";
 import { CoverArt } from "@/components/cover-art";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
+const BulbIcon = ({ className }: { className?: string }) => (
+  <Glyph name="bulb" className={className} />
+);
+
 const steps = [
   {
-    icon: Sparkles,
+    icon: BulbIcon,
     title: "Crie",
     text: "Escolha o momento e monte sua lista em minutos — sozinho ou com sugestões.",
   },
@@ -55,7 +59,7 @@ export default function HomePage() {
         <section className="container-page grid items-center gap-12 pb-20 pt-10 md:grid-cols-[1.1fr_0.9fr] md:pb-28 md:pt-16">
           <div className="animate-fade-up flex flex-col gap-7">
             <Badge tone="primary" className="w-fit">
-              <Sparkles className="size-3.5" /> Grátis para criar e compartilhar
+              <Glyph name="gift" className="size-3.5" /> Grátis para criar e compartilhar
             </Badge>
             <h1 className="font-display text-display md:text-display-lg text-balance font-semibold tracking-tight">
               A lista de presentes que o seu momento <em className="text-primary">merece</em>.
@@ -69,7 +73,7 @@ export default function HomePage() {
                 Criar minha lista grátis <ArrowRight className="size-4" />
               </Link>
               <Link
-                href="/l/tiago-e-julia"
+                href="/l/joao-e-maria"
                 className={buttonVariants({ variant: "secondary", size: "lg" })}
               >
                 Ver um exemplo
@@ -100,7 +104,7 @@ export default function HomePage() {
                       className="duration-(--duration-base) ease-spring text-3xl transition-transform group-hover:scale-110"
                       aria-hidden
                     >
-                      {t.emoji}
+                      <Glyph name={t.emoji} className="text-primary" />
                     </span>
                     <span className="font-semibold">{t.label}</span>
                   </Link>
@@ -180,21 +184,21 @@ export default function HomePage() {
 function HeroPreview() {
   const items = [
     {
-      emoji: "🍳",
+      emoji: "pan",
       title: "Air Fryer 5L",
       price: "R$ 379,00",
       tag: "Disponível",
       tone: "success" as const,
     },
     {
-      emoji: "🛏️",
+      emoji: "bed",
       title: "Jogo de cama queen",
       price: "R$ 249,90",
       tag: "Reservado",
       tone: "warning" as const,
     },
     {
-      emoji: "☕",
+      emoji: "coffee",
       title: "Cafeteira espresso",
       price: "R$ 899,00",
       tag: "Disponível",
@@ -208,12 +212,12 @@ function HeroPreview() {
         className="from-primary-soft via-blush-soft to-sun-soft absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-br blur-2xl"
       />
       <div className="rounded-hero bg-surface shadow-lift overflow-hidden">
-        <CoverArt theme="blush" emoji="🏠" className="flex h-44 items-end p-5">
-          <Badge tone="glass">🏠 Chá de casa nova</Badge>
+        <CoverArt theme="blush" emoji="house" className="flex h-44 items-end p-5">
+          <Badge tone="glass"><Glyph name="house" className="size-3.5" /> Chá de casa nova</Badge>
         </CoverArt>
         <div className="flex flex-col gap-5 p-5">
           <div>
-            <p className="font-display text-2xl font-semibold">Tiago &amp; Julia</p>
+            <p className="font-display text-2xl font-semibold">João &amp; Maria</p>
             <p className="text-ink-muted text-sm">12 de dezembro · São Paulo</p>
           </div>
           <div className="flex flex-col gap-2">
@@ -233,7 +237,7 @@ function HeroPreview() {
                   className="rounded-chip bg-surface grid size-12 place-items-center text-2xl"
                   aria-hidden
                 >
-                  {it.emoji}
+                  <Glyph name={it.emoji} className="text-primary" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{it.title}</p>

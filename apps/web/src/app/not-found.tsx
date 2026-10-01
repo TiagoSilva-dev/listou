@@ -8,7 +8,7 @@ export default function NotFound() {
       <SiteHeader />
       <main className="container-page py-20">
         <EmptyState
-          emoji="🔎"
+          icon="search"
           title="Não encontramos esta página"
           description="O link pode estar incompleto ou a lista pode ter sido arquivada pelo criador."
           action={

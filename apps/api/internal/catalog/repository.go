@@ -75,12 +75,12 @@ func (Repository) UpsertProduct(ctx context.Context, db database.DBTX, pd affili
 		productID, pd.Title, pd.Brand, pd.Description, pd.ImageURL, pd.Category, meta); err != nil {
 		return uuid.Nil, fmt.Errorf("update product: %w", err)
 	}
-	offerMeta, _ := json.Marshal(map[string]any{"demo": pd.Demo})
 	for _, o := range pd.Offers {
 		mID, ok := merchants[o.MerchantCode]
 		if !ok {
 			continue
 		}
+		offerMeta, _ := json.Marshal(map[string]any{"demo": pd.Demo, "storeName": o.StoreName})
 		if _, err := db.Exec(ctx, `
 			INSERT INTO product_offers (id, product_id, merchant_id, external_product_id, title, price_cents,
 				original_price_cents, currency, availability, product_url, image_url, last_synced_at, metadata)
@@ -138,7 +138,7 @@ func (Repository) OffersForProducts(ctx context.Context, db database.DBTX, produ
 		return out, nil
 	}
 	rows, err := db.Query(ctx, `
-		SELECT o.id, o.product_id, m.code, m.name, o.title, o.price_cents, o.original_price_cents, o.currency,
+		SELECT o.id, o.product_id, m.code, COALESCE(o.metadata->>'storeName', m.name), o.title, o.price_cents, o.original_price_cents, o.currency,
 			o.availability, o.image_url, o.last_synced_at, COALESCE((o.metadata->>'demo')::boolean, false)
 		FROM product_offers o JOIN merchants m ON m.id = o.merchant_id
 		WHERE o.product_id = ANY($1) AND m.active

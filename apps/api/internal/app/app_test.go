@@ -144,12 +144,12 @@ func TestCreatorToGuestFlow(t *testing.T) {
 	}
 
 	// Event + list from template
-	r := owner.do("POST", "/api/v1/events", map[string]any{"type": "HOUSEWARMING", "title": "Casa nova", "hostNames": "Tiago & Júlia", "template": "SUGGESTED"})
+	r := owner.do("POST", "/api/v1/events", map[string]any{"type": "HOUSEWARMING", "title": "Casa nova", "hostNames": "João & Maria", "template": "SUGGESTED"})
 	if r.code != 201 {
 		t.Fatalf("create event: %d %v", r.code, r.body)
 	}
 	eventID, slug, listID := r.str("event", "id"), r.str("event", "slug"), r.str("event", "listId")
-	if slug != "tiago-e-julia" {
+	if slug != "joao-e-maria" {
 		t.Fatalf("slug = %q", slug)
 	}
 

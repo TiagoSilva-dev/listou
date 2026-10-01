@@ -121,7 +121,6 @@ export function ItemForm({
             <option value="">Sem categoria</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.emoji ? `${c.emoji} ` : ""}
                 {c.name}
               </option>
             ))}

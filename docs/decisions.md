@@ -82,3 +82,33 @@ MVP. Capas de evento geradas por gradientes temáticos quando não há foto.
 **Decisão:** `recommendations.Builder` ordena e filtra o que um `Provider` devolve (remove o que a lista já tem por comparação de tokens, prioriza por importância e pelo texto livre do usuário, limita a 24 desejos). Hoje o provider é por regras; um provider LLM/Jev entra pela mesma interface. O módulo `listbuilder` expõe sugerir e aplicar atrás da flag `AI_LIST_BUILDER` (404 `FEATURE_DISABLED` quando desligada). Sugestões são apenas desejos: nunca produtos, preços ou links; o produto continua vindo do `MatchingService`.
 
 **Consequências:** trocar o motor não muda API nem UI. O texto livre só afeta a ordenação até existir um provider generativo; qualquer provider futuro deve tratar o prompt como dado não confiável e passar pelos mesmos limites.
+
+## ADR-0011: Produtos por link colado (`LINK`) enquanto não há API oficial
+
+**Status:** aceito (M11).
+
+**Contexto:** Mercado Livre não tem API de afiliados documentada que possamos usar e a Amazon exige conta com vendas qualificadas para liberar a Creators API. Scraping por n8n ou similar violaria termos das lojas, quebra a cada mudança de HTML e contraria a regra de nunca inventar dados de parceiros.
+
+**Decisão:** provider `LINK` (`internal/affiliate/link`) atrás de `affiliate.Provider`. O usuário cola a URL; a API baixa a página (SSRF-safe) e lê só os metadados públicos de pré-visualização (JSON-LD `Product`, Open Graph, `<title>`): título, imagem, marca, descrição. Preço, disponibilidade e rating **nunca** são lidos; o item entra como desejo. Se a página não pode ser lida (bloqueio de bot, sem metadados, título igual ao nome da loja), o usuário digita o nome. `BuildAffiliateURL` devolve a URL colada sem alterar; só parâmetros de rastreamento de analytics (`utm_*`, `fbclid`, `gclid`…) são removidos. O clique continua passando por `/go/{offerId}`. Sem n8n nem novo serviço.
+
+**Consequências:** nenhuma monetização por afiliado nesse caminho até haver o formato de link aprovado de cada programa (`docs/integrations/<loja>.md`). Adapters oficiais entram pela mesma interface. O fetch de URL de usuário é superfície de SSRF, mitigada em `docs/integrations/link.md`.
+
+## ADR-0012: Catálogo curado com links de afiliado nossos (`CURATED`)
+
+**Status:** aceito (M11).
+
+**Contexto:** o "colar link" não monetiza (ADR-0011). Os programas permitem gerar links de afiliado no painel, mas ainda não há API oficial utilizável para busca ou preço.
+
+**Decisão:** provider `CURATED` (`internal/affiliate/curated`) lê um catálogo (inicialmente `catalog.json` embutido; hoje tabelas, ver ADR-0013): produtos reais com título, imagem e um link de afiliado por loja gerado por nós. `BuildAffiliateURL` devolve o link sem alterá-lo. Sem preço nem disponibilidade. O catálogo é validado ao carregar. Um provider por merchant (índice único), então o Mercado Livre passa a `CURATED` e Amazon/Shopee seguem no `MOCK` até terem links.
+
+**Consequências:** quem escolhe produtos pela busca sai por um link monetizado; quem cola link próprio não. Crescer o catálogo é um PR em `catalog.json`; se virar centenas de itens, migrar para tabela com admin. Imagens e divulgação de afiliado dependem dos termos de cada programa (`docs/integrations/curated.md`).
+
+## ADR-0013: Painel admin e catálogo curado em tabelas
+
+**Status:** aceito (M11).
+
+**Contexto:** o ADR-0012 previa migrar o `catalog.json` para tabela com admin quando o catálogo crescesse. Editar JSON exige PR e redeploy a cada produto, e quem cura o catálogo não é necessariamente quem programa.
+
+**Decisão:** `curated_products`/`curated_offers` (migration 00009, com os 3 produtos iniciais) substituem o JSON; `curated.Provider` lê de uma `Source` (Postgres). Módulo `internal/admin` expõe `/api/v1/admin/curated-products` atrás de `RequireAdminFunc` (papel `ADMIN`, concedido só por `migrate admin <email>`), com validação em `curated.Input`, auditoria em `audit_logs` e a tela `/admin/produtos` (404 para quem não é admin). O leitor de link existente (`/products/link-preview`) preenche título e imagem.
+
+**Consequências:** o catálogo muda sem deploy. Cada busca consulta o Postgres (volume pequeno; sem cache). Sem edição pública: o papel ADMIN não pode ser dado pela interface. Preços continuam fora.

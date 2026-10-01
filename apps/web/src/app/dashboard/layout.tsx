@@ -9,7 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!user) redirect("/entrar?next=/dashboard");
   return (
     <>
-      <AppHeader userName={user.name} />
+      <AppHeader userName={user.name} isAdmin={user.role === "ADMIN"} />
       <main className="container-page py-8 sm:py-12">{children}</main>
     </>
   );

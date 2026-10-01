@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
 import { ApplySuggestionsResult, Suggestions, type SuggestedCategory } from "@listou/types";
-import { Badge, Button, EmptyState, Input, Sheet, Skeleton, useToast } from "@listou/ui";
+import { Badge, Button, EmptyState, Input, Sheet, Skeleton, useToast, Glyph } from "@listou/ui";
 import { api, ApiError } from "@/lib/api";
 
 const PRIORITY = { ESSENTIAL: "HIGH", RECOMMENDED: "MEDIUM", OPTIONAL: "LOW" } as const;
@@ -89,7 +88,7 @@ export function SuggestionsSheet({
         body,
       });
       toast(
-        `${res.addedItems} ${res.addedItems === 1 ? "item adicionado" : "itens adicionados"} ✨`,
+        `${res.addedItems} ${res.addedItems === 1 ? "item adicionado" : "itens adicionados"} `,
         "success",
       );
       setCategories(null);
@@ -125,7 +124,7 @@ export function SuggestionsSheet({
           aria-label="Conte o que você procura"
         />
         <Button type="submit" loading={loading}>
-          <Sparkles className="size-4" /> {categories ? "Atualizar" : "Sugerir"}
+          <Glyph name="bulb" className="size-4" /> {categories ? "Atualizar" : "Sugerir"}
         </Button>
       </form>
 
@@ -144,7 +143,7 @@ export function SuggestionsSheet({
       ) : categories && categories.length === 0 ? (
         <div className="mt-6">
           <EmptyState
-            emoji="🎉"
+            icon="party"
             title="Sua lista já está completa"
             description="Não temos mais ideias para este momento. Que tal buscar produtos específicos?"
           />
@@ -155,7 +154,7 @@ export function SuggestionsSheet({
             <section key={c.name} aria-label={c.name} className="flex flex-col gap-2">
               <div>
                 <h3 className="font-display text-lg font-semibold">
-                  <span aria-hidden>{c.emoji}</span> {c.name}
+                  <Glyph name={c.emoji} className="text-primary mr-1 inline size-[1em] align-[-0.12em]" /> {c.name}
                 </h3>
                 <p className="text-ink-muted text-sm">{c.reason}</p>
               </div>
@@ -171,9 +170,7 @@ export function SuggestionsSheet({
                           checked={picked.has(key)}
                           onChange={() => toggle(key)}
                         />
-                        <span aria-hidden className="text-xl">
-                          {d.emoji}
-                        </span>
+                        <Glyph name={d.emoji} className="text-primary size-6" />
                         <span className="flex-1 text-sm font-medium">
                           {d.title}
                           {d.quantity > 1 ? (

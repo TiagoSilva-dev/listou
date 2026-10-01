@@ -16,10 +16,11 @@ import {
   useToast,
 } from "@listou/ui";
 import { api, ApiError } from "@/lib/api";
+import { AddLinkPanel } from "./add-link-panel";
 import { ItemForm, type ItemPayload } from "./item-form";
 import { ItemVisual } from "./item-visual";
 
-type Tab = "search" | "manual";
+type Tab = "search" | "link" | "manual";
 
 export function AddItemSheet({
   open,
@@ -128,11 +129,12 @@ export function AddItemSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange} title="Adicionar item" className="sm:max-w-2xl">
       <div className="flex flex-col gap-5">
-        <div role="tablist" className="rounded-control bg-canvas-deep grid grid-cols-2 gap-1 p-1">
+        <div role="tablist" className="rounded-control bg-canvas-deep grid grid-cols-3 gap-1 p-1">
           {(
             [
-              ["search", "Buscar produtos"],
-              ["manual", "Adicionar à mão"],
+              ["search", "Buscar"],
+              ["link", "Colar link"],
+              ["manual", "À mão"],
             ] as const
           ).map(([id, label]) => (
             <button
@@ -252,6 +254,8 @@ export function AddItemSheet({
               </ul>
             )}
           </div>
+        ) : tab === "link" ? (
+          <AddLinkPanel listId={listId} onAdded={onAdded} />
         ) : (
           <ItemForm categories={categories} submitLabel="Adicionar à lista" onSubmit={addManual} />
         )}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CalendarDays, MapPin, Search, Sparkles } from "lucide-react";
+import { CalendarDays, MapPin, Search } from "lucide-react";
 import {
   eventTypeMeta,
   formatEventDate,
@@ -21,8 +21,7 @@ import {
   Input,
   MarketplaceBadge,
   Progress,
-  Select,
-} from "@listou/ui";
+  Select, Glyph } from "@listou/ui";
 import { api, apiVoid } from "@/lib/api";
 import { displayPriceCents, isGone, matchesFilters, PRICE_BANDS } from "@/lib/public-list";
 import { useStoredReservations } from "@/lib/reservations-store";
@@ -141,7 +140,7 @@ export function PublicRegistry({ initial, siteUrl }: { initial: PublicList; site
           className="shadow-lift"
         />
         <Badge tone="primary">
-          {meta.emoji} {meta.headline}
+          <Glyph name={meta.emoji} className="text-primary mr-1.5 inline size-[0.9em] align-[-0.1em]" /> {meta.headline}
         </Badge>
         <h1 className="font-display text-display-sm sm:text-display text-balance font-semibold tracking-tight">
           {event.hostNames ?? event.title}
@@ -218,13 +217,13 @@ export function PublicRegistry({ initial, siteUrl }: { initial: PublicList; site
       <main className="container-page py-8">
         {data.items.length === 0 ? (
           <EmptyState
-            emoji="🎁"
+            icon="gift"
             title="A lista ainda está sendo montada"
             description="Volte em breve para ver os presentes escolhidos com carinho."
           />
         ) : visible.length === 0 ? (
           <EmptyState
-            emoji="🔍"
+            icon="search"
             title="Nenhum presente encontrado"
             description="Tente outra busca ou outra faixa de preço."
             action={
@@ -267,7 +266,7 @@ export function PublicRegistry({ initial, siteUrl }: { initial: PublicList; site
           theme="lavender"
           className="rounded-hero flex flex-col items-center gap-4 px-6 py-12 text-center"
         >
-          <Sparkles className="text-primary size-6" />
+          <Glyph name="gift" className="text-primary size-6" />
           <h2 className="font-display text-2xl font-semibold sm:text-3xl">Gostou da ideia?</h2>
           <p className="text-ink-soft max-w-md">
             Crie sua lista gratuitamente e compartilhe com quem você ama.

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import { Event, eventTypeMeta, formatEventDate } from "@listou/types";
-import { Badge, buttonVariants, EmptyState } from "@listou/ui";
+import { Badge, buttonVariants, EmptyState, Glyph } from "@listou/ui";
 import { CoverArt } from "@/components/cover-art";
 import { serverApi } from "@/lib/server-api";
 
@@ -32,7 +32,7 @@ export default async function DashboardPage() {
 
       {events.length === 0 ? (
         <EmptyState
-          emoji="🎁"
+          icon="gift"
           title="Vamos criar sua primeira lista?"
           description="Escolha o momento, monte a lista e compartilhe com quem você ama. Leva poucos minutos."
           action={
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
                 >
                   <CoverArt theme={e.theme} emoji={meta.emoji} className="h-36 p-4">
                     <Badge tone="glass">
-                      {meta.emoji} {meta.label}
+                      <Glyph name={meta.emoji} className="mr-1 size-3.5" /> {meta.label}
                     </Badge>
                   </CoverArt>
                   <div className="flex flex-1 flex-col gap-3 p-5">

@@ -57,24 +57,28 @@ func seed(ctx context.Context, url string) error {
 		return fmt.Errorf("seed user: %w", err)
 	}
 
+	if _, err := pool.Exec(ctx, `UPDATE users SET role = 'ADMIN' WHERE id = $1`, user.ID); err != nil {
+		return fmt.Errorf("seed admin: %w", err)
+	}
+
 	type spec struct {
 		in    events.CreateInput
 		title string
 		extra []lists.ItemInput
 	}
-	wedding := "Tiago & Julia"
+	wedding := "João & Maria"
 	hostNames := wedding
 	loc := "São Paulo, SP"
 	date := time.Now().AddDate(0, 3, 12).Format(time.DateOnly)
 	desc := "Estamos começando uma nova fase e vamos adorar ter vocês com a gente. Escolhemos alguns itens para facilitar — e qualquer carinho será muito bem-vindo! 💜"
-	slugWedding, slugHouse := "tiago-e-julia", "casa-nova-tiago-julia"
+	slugWedding, slugHouse := "joao-e-maria", "casa-nova-joao-maria"
 	houseDesc := "Nosso primeiro apê juntos, 70 m² de recomeço."
 	houseDate := time.Now().AddDate(0, 1, 5).Format(time.DateOnly)
-	houseTitle := "Chá de casa nova do Tiago e Julia"
-	houseHosts := "Tiago e Julia"
+	houseTitle := "Chá de casa nova do João e Maria"
+	houseHosts := "João e Maria"
 
 	specs := []spec{
-		{in: events.CreateInput{Type: "WEDDING", Title: "Casamento Tiago & Julia", HostNames: &hostNames, Description: &desc, EventDate: &date, Location: &loc, Slug: &slugWedding, Template: "SUGGESTED"},
+		{in: events.CreateInput{Type: "WEDDING", Title: "Casamento João & Maria", HostNames: &hostNames, Description: &desc, EventDate: &date, Location: &loc, Slug: &slugWedding, Template: "SUGGESTED"},
 			extra: []lists.ItemInput{{Title: ptr("Dinheiro para a lua de mel"), Emoji: ptr("✈️"), Description: ptr("Contribuição livre para a nossa viagem."), DesiredQuantity: ptrInt(1), PriceReferenceCents: ptr64(50000)}}},
 		{in: events.CreateInput{Type: "HOUSEWARMING", Title: houseTitle, HostNames: &houseHosts, Description: &houseDesc, EventDate: &houseDate, Slug: &slugHouse, Template: "SUGGESTED"}},
 	}

@@ -12,3 +12,4 @@ export { EmptyState } from "./components/empty-state";
 export { Sheet } from "./components/sheet";
 export { ToastProvider, useToast } from "./components/toast";
 export { CategoryTabs, type CategoryTab } from "./components/category-tabs";
+export { Glyph, glyphName, type GlyphName } from "./components/glyph";

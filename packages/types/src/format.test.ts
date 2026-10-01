@@ -18,7 +18,7 @@ describe("format", () => {
   });
 
   it("slugifies portuguese names", () => {
-    expect(slugify("Chá de casa nova do Tiago & Júlia!")).toBe("cha-de-casa-nova-do-tiago-e-julia");
+    expect(slugify("Chá de casa nova do João & Maria!")).toBe("cha-de-casa-nova-do-joao-e-maria");
   });
 
   it("counts days until a date", () => {

@@ -10,7 +10,8 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
+ARG API_URL=http://api:8080
+ENV NEXT_TELEMETRY_DISABLED=1 API_URL=$API_URL
 RUN pnpm --filter @listou/web build
 
 FROM node:22-alpine AS runtime

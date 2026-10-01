@@ -32,6 +32,9 @@ type OfferData struct {
 	Availability       Availability
 	ProductURL         string
 	ImageURL           *string
+	// StoreName is a display name for sources that are not a fixed merchant
+	// (the LINK provider uses the pasted page's site name or host).
+	StoreName *string
 }
 
 // ProductData is a provider's view of a product and its offers.
@@ -71,7 +74,10 @@ type Provider interface {
 	BuildAffiliateURL(ctx context.Context, merchantCode, productURL string, click ClickContext) (string, error)
 }
 
-var ErrNotFound = errors.New("affiliate: product not found")
+var (
+	ErrNotFound   = errors.New("affiliate: product not found")
+	ErrInvalidURL = errors.New("affiliate: invalid or disallowed url")
+)
 
 // Registry maps adapter codes to implementations.
 type Registry struct{ providers map[string]Provider }

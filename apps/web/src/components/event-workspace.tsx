@@ -12,7 +12,6 @@ import {
   Settings,
   Share2,
   ShoppingBag,
-  Sparkles,
 } from "lucide-react";
 import { z } from "zod";
 import {
@@ -33,8 +32,7 @@ import {
   EmptyState,
   MarketplaceBadge,
   Progress,
-  useToast,
-} from "@listou/ui";
+  useToast, Glyph } from "@listou/ui";
 import { api, ApiError } from "@/lib/api";
 import { plural, STATUS_LABEL, STATUS_TONE } from "@/lib/labels";
 import { AddItemSheet } from "./add-item-sheet";
@@ -101,7 +99,7 @@ export function EventWorkspace({
       });
       setDash((d) => ({ ...d, event: res.event }));
       if (status === "PUBLISHED") {
-        toast("Sua lista está no ar! 🎉", "success");
+        toast("Sua lista está no ar!", "success");
         setShareOpen(true);
       } else toast("Lista voltou para rascunho");
     } catch (err) {
@@ -142,7 +140,7 @@ export function EventWorkspace({
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="glass">
-                {meta.emoji} {meta.label}
+                <Glyph name={meta.emoji} className="mr-1 size-3.5" /> {meta.label}
               </Badge>
               <Badge tone={published ? "success" : "glass"}>
                 {published ? "No ar" : "Rascunho"}
@@ -157,7 +155,7 @@ export function EventWorkspace({
                 <span className="ml-2 font-semibold">
                   ·{" "}
                   {stats.daysRemaining === 0
-                    ? "é hoje! 🎉"
+                    ? "é hoje!"
                     : `faltam ${plural(stats.daysRemaining, "dia", "dias")}`}
                 </span>
               ) : null}
@@ -193,7 +191,7 @@ export function EventWorkspace({
               aria-hidden
               className="bg-surface grid size-11 shrink-0 place-items-center rounded-full text-xl"
             >
-              {justCreated ? "🎉" : "🚀"}
+              <Glyph name={justCreated ? "party" : "flag"} className="text-primary" />
             </span>
             <div>
               <p className="font-semibold">
@@ -256,7 +254,7 @@ export function EventWorkspace({
           <Progress value={done} max={stats.totalUnits} label="Presentes escolhidos" />
           {dash.surpriseMode ? (
             <p className="text-ink-muted text-sm">
-              🎁 Modo surpresa ligado: você vê o total, mas não quem deu o quê.
+              Modo surpresa ligado: você vê o total, mas não quem deu o quê.
             </p>
           ) : null}
         </Card>
@@ -268,7 +266,7 @@ export function EventWorkspace({
           <div className="flex items-center gap-2">
             {aiBuilder ? (
               <Button variant="soft" onClick={() => setSuggestOpen(true)}>
-                <Sparkles className="size-4" /> Ideias
+                <Glyph name="bulb" className="size-4" /> Ideias
               </Button>
             ) : null}
             <Button onClick={() => setAddOpen(true)}>
@@ -283,7 +281,7 @@ export function EventWorkspace({
 
         {list.items.length === 0 ? (
           <EmptyState
-            emoji="🛍️"
+            icon="bag"
             title="Sua lista está vazia"
             description="Busque produtos de várias lojas ou adicione qualquer desejo à mão."
             action={
@@ -294,7 +292,7 @@ export function EventWorkspace({
           />
         ) : visible.length === 0 ? (
           <EmptyState
-            emoji="🗂️"
+            icon="folder"
             title="Nada nesta categoria ainda"
             description="Adicione um item e escolha esta categoria."
           />

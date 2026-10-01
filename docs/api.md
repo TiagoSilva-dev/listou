@@ -43,7 +43,11 @@ Base: `/api/v1` (JSON, camelCase). Especificação: [`openapi.yaml`](openapi.yam
 | POST             | `/lists/{id}/categories` · PATCH/DELETE `/categories/{id}` |                                                                              |
 | GET              | `/products/search?q=&sort=`                                | providers habilitados; `sort`: `relevance`, `price_asc`, `price_desc`        |
 | POST             | `/products/import`                                         | persiste produto + ofertas do provider                                       |
+| POST             | `/products/link-preview`                                   | `{url}` → `{preview:{url,title,imageUrl,storeName,readable}}`; 20/min por IP |
+| POST             | `/products/import-link`                                    | `{url,title?}`; `title` obrigatório se `readable=false` (`LINK_UNREADABLE`)  |
 | GET              | `/products/{id}` · `/products/{id}/offers`                 | ofertas trazem `goUrl`, nunca a URL da loja                                  |
+| GET/POST         | `/admin/curated-products`                                  | **só ADMIN** (403 `FORBIDDEN`): lista com `merchants` / cria produto curado  |
+| PUT/DELETE       | `/admin/curated-products/{id}`                             | **só ADMIN**: substitui campos e ofertas / remove (audit log)                |
 | DELETE           | `/manage/reservations/{id}`                                | dono cancela reserva (audit log)                                             |
 
 ## Público (sem login)

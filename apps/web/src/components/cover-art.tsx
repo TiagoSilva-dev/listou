@@ -1,4 +1,4 @@
-import { cn } from "@listou/ui";
+import { cn, Glyph } from "@listou/ui";
 
 /**
  * Generated cover art used when an event has no photo. Each theme is a set of
@@ -44,12 +44,11 @@ export function CoverArt({
     >
       <div aria-hidden className="grain absolute inset-0 -z-10 mix-blend-multiply" />
       {emoji ? (
-        <span
-          aria-hidden
-          className="pointer-events-none absolute -bottom-6 -right-4 -z-10 rotate-[-12deg] select-none text-[9rem] opacity-30 blur-[1px] sm:text-[12rem]"
-        >
-          {emoji}
-        </span>
+        <Glyph
+          name={emoji}
+          className="pointer-events-none absolute -bottom-6 -right-4 -z-10 rotate-[-12deg] select-none text-[9rem] text-white/45 sm:text-[12rem]"
+          strokeWidth={0.9}
+        />
       ) : null}
       {children}
     </div>

@@ -55,6 +55,33 @@ make format
 make build
 ```
 
+### Testes individuais
+
+```
+cd apps/api && go test -race ./internal/lists -run TestName     # um teste Go
+cd apps/api && TEST_DATABASE_URL=postgres://... go test ./internal/app   # integração (pula sem a var; use um banco descartável!)
+pnpm --filter @listou/web exec vitest run path/to/file.test.ts          # um teste Vitest
+pnpm --filter @listou/web exec playwright test e2e/registry.spec.ts     # um e2e (stack rodando)
+```
+
+Login de desenvolvimento (após `make db-reset`): `tiago@listou.dev` / `listou123`; lista pública
+de exemplo em `/l/joao-e-maria`.
+
+## Arquitetura (visão geral)
+
+- **Web é BFF**: o navegador só fala com a origem web; `/api/v1/*` e `/go/*` são reescritos para a API
+  (ADR-0005), então não há CORS e o cookie de sessão é first-party. Server Components chamam a API
+  direto encaminhando o cookie. Não chame a API de outra origem no cliente.
+- **Sessão**: token opaco em cookie HttpOnly (só o SHA-256 vai ao banco), não JWT (ADR-0003).
+  CSRF mitigado por `SameSite=Lax` + checagem de `Origin`.
+- **Status de item é derivado** (`lists.DeriveStatus`) das quantidades desired/purchased/reserved +
+  `archived_at`; nunca persista status (ADR-0007).
+- **Feature flags**: `FEATURE_FLAGS` no `.env` (`internal/platform/flags`). O AI List Builder
+  (`listbuilder`, sobre `recommendations.Provider`) fica atrás de `AI_LIST_BUILDER`.
+- Rate limiting é em memória (ADR-0004); não assuma múltiplas instâncias da API.
+- Marketplace hoje é `MockProvider` (catálogo fictício); adapters reais só com doc oficial em
+  `docs/integrations/`.
+
 ## Convenções
 
 Go

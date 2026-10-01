@@ -20,7 +20,7 @@ make dev       # API em http://localhost:8080, web em http://localhost:3000
 Ou tudo em containers: `make dev-docker`.
 
 Login de desenvolvimento (seed): `tiago@listou.dev` / `listou123`.
-Lista pública de exemplo: http://localhost:3000/l/tiago-e-julia
+Lista pública de exemplo: http://localhost:3000/l/joao-e-maria
 
 ## Documentação
 

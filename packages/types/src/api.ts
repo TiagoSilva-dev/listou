@@ -177,6 +177,17 @@ export const SearchResult = z.object({
 });
 export type SearchResult = z.infer<typeof SearchResult>;
 
+/** What could be read from a pasted product link. No price: it is never taken from a page. */
+export const LinkPreview = z.object({
+  url: z.string(),
+  title: z.string(),
+  imageUrl: z.string().nullable(),
+  storeName: z.string(),
+  /** False when the page gave no title; the user must type the item name. */
+  readable: z.boolean(),
+});
+export type LinkPreview = z.infer<typeof LinkPreview>;
+
 export const Reservation = z.object({
   id: z.string(),
   itemId: z.string(),
@@ -269,3 +280,23 @@ export const OwnerList = z.object({
   items: z.array(ListItem),
 });
 export type OwnerList = z.infer<typeof OwnerList>;
+
+/** Admin: a hand-curated product and the affiliate links we generated for it. */
+export const CuratedOffer = z.object({ merchant: z.string(), url: z.string() });
+export type CuratedOffer = z.infer<typeof CuratedOffer>;
+
+export const CuratedMerchant = z.object({ code: z.string(), name: z.string() });
+export type CuratedMerchant = z.infer<typeof CuratedMerchant>;
+
+export const CuratedProduct = z.object({
+  id: z.string(),
+  externalId: z.string(),
+  title: z.string(),
+  brand: z.string(),
+  category: z.string(),
+  keywords: z.string(),
+  imageUrl: z.string(),
+  active: z.boolean(),
+  offers: z.array(CuratedOffer),
+});
+export type CuratedProduct = z.infer<typeof CuratedProduct>;

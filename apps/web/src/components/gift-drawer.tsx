@@ -185,7 +185,7 @@ function DrawerBody({
         headers: { "X-Reservation-Token": r.token },
       });
       updateReservation(slug, r.id, { kind: "PURCHASE" });
-      toast("Obrigado! Marcamos como comprado. 💜", "success");
+      toast("Obrigado! Marcamos como comprado.", "success");
       onChanged();
       onClose();
     } catch (err) {
@@ -267,7 +267,7 @@ function DrawerBody({
 
       {gone && myReservations.length === 0 ? (
         <div className="rounded-card bg-canvas-deep p-5 text-center">
-          <p className="font-semibold">Este presente já foi escolhido 💜</p>
+          <p className="font-semibold">Este presente já foi escolhido</p>
           <p className="text-ink-muted text-sm">Que tal olhar outro item da lista?</p>
         </div>
       ) : null}

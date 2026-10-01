@@ -12,7 +12,7 @@ export function SiteFooter() {
             ninguém.
           </p>
         </div>
-        <p>© {new Date().getFullYear()} Listou · Feito no Brasil 💜</p>
+        <p>© {new Date().getFullYear()} Listou · Feito no Brasil</p>
       </div>
     </footer>
   );

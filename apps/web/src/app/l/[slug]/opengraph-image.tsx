@@ -8,7 +8,7 @@ export const alt = "Lista de presentes no Listou";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** Social preview: "Lista de casamento · Tiago & Julia · 12 de dezembro". */
+/** Social preview: "Lista de casamento · João & Maria · 12 de dezembro". */
 export default async function OpenGraphImage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   let headline = "Lista de presentes";
